@@ -217,7 +217,7 @@ import './Login.css';
 
 function Login() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -230,7 +230,7 @@ function Login() {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/login/',
         {
-          username,           // اسم المستخدم
+          email,             // البريد الإلكتروني
           password,           // كلمة المرور
           remember_me: rememberMe
         },
@@ -272,16 +272,17 @@ function Login() {
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <span className="input-icon">
-              {/* أيقونة المستخدم */}
+              {/* أيقونة البريد الإلكتروني */}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
               </svg>
             </span>
             <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
