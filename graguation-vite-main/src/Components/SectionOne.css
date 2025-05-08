@@ -1,0 +1,110 @@
+
+body {
+    font-family: "Cairo", sans-serif;
+  }
+  a {
+    text-decoration: none;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .main-nav {
+    display: flex;
+    /* justify-content: space-between; */
+  }
+  .header .main-nav > li > a {
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    height: 72px;
+    top: 0;
+    /* position: fixed; */
+    color: black;
+    padding: 0 30px;
+    overflow: hidden;
+    font-size: 18px;
+  } 
+/* Small */
+@media (min-width: 768px) {
+    .container {
+      width: 750px;
+    }
+  }
+  /* Medium */
+  @media (min-width: 992px) {
+    .container {
+      width: 970px;
+    }
+  }
+  /* Large */
+   @media (min-width: 1200px) {
+    .container {
+      width: 1170px;
+    }
+  }
+  .header {
+    background-color: white;
+    /* position: relative; */
+    box-shadow: 0 0 10px #ddd;
+  }
+  .header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    /* position: relative; */
+  }
+  .header .logo {
+    font-size: 23px;
+    font-weight: bold;
+    color: black;
+    height: 72px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .btn-navBar {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px 30px;
+    color: #fff;
+    background: linear-gradient(45deg, #004ec2, #9fe870);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px #9fe870;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-navBar::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    top: 0;
+    left: -100%;
+    transition: 0.5s;
+}
+
+.btn-navBar:hover::before {
+    left: 100%;
+}
+
+.btn-navBar:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 10px rgba(255, 0, 255, 0.8);
+}
+a:hover {
+  color: #004ec2;
+}

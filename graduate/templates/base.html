@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- تحميل Bootstrap 5 من الملفات المحلية -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    
+    <!-- تحميل Bootstrap 5 من CDN كبديل -->
+    <link rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          integrity="sha384-rbsA2VBKQieOQj8ey1L79SkjPjI2EfbWr6UiwV8V+gWzIbbVYUew+OrCXaRkfj" 
+          crossorigin="anonymous">
+
+    {% block stylesheet %}{% endblock %}
+</head>
+<body>
+
+{% block body %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">Django Boards</a>
+        
+        <!-- زر القائمة للموبايل -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu" 
+                aria-controls="mainMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- القائمة -->
+        <div class="collapse navbar-collapse" id="mainMenu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userMenu" data-bs-toggle="dropdown" 
+                       aria-haspopup="true" aria-expanded="false">
+                        {{ user.username }}
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <a class="dropdown-item" href="#">My Account</a>
+                        <a class="dropdown-item" href="#">Change Password</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'logout' %}">Log out</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <ol class="breadcrumb my-4">
+        {% block breadcrumb %}{% endblock %}
+    </ol>
+
+    {% block content %}{% endblock %}
+</div>
+{% endblock body %}
+
+<!-- تحميل jQuery (اختياري) -->
+<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+
+<!-- تحميل Popper.js محليًا -->
+<script src="{% static 'js/popper.min.js' %}"></script>
+
+<!-- تحميل Popper.js من CDN (احتياطي) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js" 
+        integrity="sha384-gmXZB5SOkGqKjbBjyJ5U2szYlOv5Jv1nlfp7BtdHCcvxvKYo5AoIhEdA0FurxFfG" 
+        crossorigin="anonymous"></script>
+
+<!-- تحميل Bootstrap محليًا -->
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+<!-- تحميل Bootstrap من CDN (احتياطي) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-UkfFVEpTQj5zzzIHYHTBp5tS2eXlLDVhaOjPt4tALkzS6/9l+Uch5DY1F0Uczpqj" 
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
