@@ -47,37 +47,32 @@ class ContactView(APIView):
         data = {"message": "هذه صفحة الاتصال"}
         return Response(data, status=status.HTTP_200_OK)
 
-# API لصفحة الملف الشخصي
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import IsAuthenticated
-
-# class ProfileView(APIView):
-#     permission_classes = [IsAuthenticated]  # تأكد من أن المستخدم مسجل دخوله فقط يمكنه الوصول
-    
-#     def get(self, request):
-#         user = request.user  # الحصول على المستخدم المسجل دخوله
-#         return Response({
-#             'username': user.username  # إرجاع اسم المستخدم
-#         })
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from firebase_config import db
 @csrf_exempt
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile_view(request):
-    user = request.user
+def profile(request):
+    print("UID from session:", request.session.get('uid')),
+    uid = request.session.get('uid')  # جلب الـ uid من الجلسة
+
+    if not uid:
+        return Response({"message": "غير مسجل الدخول"}, status=401)
+
+    user_doc = db.collection('users').document(uid).get()
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+        return Response({
+            "username": user_data.get("username", ""),
+            "name": user_data.get("name", ""),
+            "level": user_data.get("level", "beginner"),
+            "wins": user_data.get("wins", 0),
+            "losses": user_data.get("losses", 0),
+            "matches": user_data.get("matches", 0),
+            "profileImage": user_data.get("profileImage", ""),
+            "friends": user_data.get("friends", []),
+        })
+    else:
+        return Response({"message": "المستخدم غير موجود"}, status=404)
     
-    data = {
-        "username": user.username,
-        "email": user.email,
-        "name": user.first_name or "No Name",
-        "profileImage": "https://via.placeholder.com/150",  # صورة افتراضية مؤقتاً
-        "level": "beginner",
-        "matches": 0,
-        "wins": 0,
-        "losses": 0,
-        "friends": [],
-    }
-    return Response(data)
+      

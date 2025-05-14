@@ -13,10 +13,10 @@ from .views import VideoUploadView  # استيراد الـ API لرفع الف�
 # ]
 from django.urls import path
 from .views import ShopView, ContactView, VideoUploadView
-from .views import profile_view
+from .views import profile
 
 urlpatterns = [
-    path('api/profile/', profile_view, name='profile'),
+    path('profile/', profile, name='profile'),
     path('home/', views.home, name='home'),
     path('shop-api/', ShopView.as_view(), name='shop-api'),  # API للـ shop
     path('contact-api/', ContactView.as_view(), name='contact-api'),  # API للـ contact

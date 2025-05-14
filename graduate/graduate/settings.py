@@ -55,12 +55,17 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+SESSION_COOKIE_SAMESITE = 'None'  # السماح بإرسال الكوكيز عبر الـ cross-site requests
+CSRF_COOKIE_SAMESITE = 'None'    # تأكيد أن CSRF يتم إرساله عبر الـ cross-site requests
+SESSION_COOKIE_SECURE = False    # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
+CSRF_COOKIE_SECURE = False       # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',  # تفعيل المصادقة باستخدام الجلسة
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # تأكد من أن المستخدم مسجل دخوله فقط يمكنه الوصول
+        #'rest_framework.permissions.IsAuthenticated',  # تأكد من أن المستخدم مسجل دخوله فقط يمكنه الوصول
+         'rest_framework.permissions.AllowAny',
     ],
 }
 

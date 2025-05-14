@@ -266,7 +266,7 @@ function Profile() {
     const fetchUserData = async () => {
       try {
         // هنا سيتم إرسال طلب إلى API الخاص بك في Django لعرض بيانات المستخدم باستخدام axios
-        const response = await axios.get('http://localhost:8000/home/api/profile/', {
+        const response = await axios.get('http://localhost:8000/home/profile/', {
           withCredentials: true, // هنا نضيف withCredentials مع axios لتضمين الكوكيز مع الطلب
         });
 

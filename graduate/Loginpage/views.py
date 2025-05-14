@@ -118,7 +118,7 @@ from firebase_config import db
 # مفتاح Web API الخاص بمشروعك (من firebaseConfig.apiKey)
 FIREBASE_WEB_API_KEY = "AIzaSyBlWYhG8sSKRCqn4t6Qp_T30xhf-gvwLwI"
 
-# views.py
+
 
 
 
@@ -133,28 +133,24 @@ def signup(request):
     if not username or not email or not password:
         return Response({"message": "الرجاء إدخال جميع الحقول"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # 1) تأكد من تفرد اسم المستخدم
-    username_doc = db.collection('usernames').document(username).get()
-    if username_doc.exists:
+    # تحقق من عدم وجود اسم المستخدم مسبقًا في جدول users
+    users_ref = db.collection('users')
+    existing_user_query = users_ref.where('username', '==', username).stream()
+    if any(existing_user_query):
         return Response({"message": "اسم المستخدم مستخدم بالفعل"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # 2) إنشاء المستخدم في Firebase Auth
+        # إنشاء المستخدم في Firebase Auth
         user = firebase_auth.create_user(email=email, password=password)
 
-        # 3) حفظ بيانات المستخدم في Firestore
-        db.collection('users').document(user.uid).set({
+        # حفظ بيانات المستخدم في جدول users فقط
+        users_ref.document(user.uid).set({
             'email': email,
             'username': username,
             'uid': user.uid
         })
-        # 4) حفظ الربط username → uid/email
-        db.collection('usernames').document(username).set({
-            'uid': user.uid,
-            'email': email
-        })
 
-        # 5) (اختياري) إنشاء جلسة هنا لو تريدين
+        # إنشاء جلسة
         request.session['uid'] = user.uid
 
         return Response({"message": "تم إنشاء الحساب بنجاح", "uid": user.uid}, status=status.HTTP_201_CREATED)
@@ -163,26 +159,26 @@ def signup(request):
         return Response({"message": f"حدث خطأ أثناء التسجيل: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @csrf_exempt
 def login_view(request):
-    username    = request.data.get("username")
+    email       = request.data.get("email")
     password    = request.data.get("password")
     remember_me = request.data.get("remember_me", False)
 
-    # 1) تأكدي من وصول البيانات
-    if not username or not password:
-        return Response({"message": "يرجى إدخال اسم المستخدم وكلمة المرور"}, status=status.HTTP_400_BAD_REQUEST)
+    if not email or not password:
+        return Response({"message": "يرجى إدخال البريد الإلكتروني وكلمة المرور"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # 2) ابحثي عن البريد المرتبط بـ username
-    username_doc = db.collection('usernames').document(username).get()
-    if not username_doc.exists:
-        return Response({"message": "اسم المستخدم غير موجود"}, status=status.HTTP_401_UNAUTHORIZED)
-    email = username_doc.to_dict()['email']
+    # البحث عن uid في Firestore عبر البريد الإلكتروني
+    users = db.collection('users').where('email', '==', email).get()
+    if not users:
+        return Response({"message": "البريد الإلكتروني غير موجود"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # 3) اطّلقي طلب تسجيل الدخول إلى Firebase
+    user_doc = users[0]
+    uid = user_doc.id
+
+    # تسجيل الدخول باستخدام Firebase
     url = (
         "https://identitytoolkit.googleapis.com/"
         f"v1/accounts:signInWithPassword?key={settings.FIREBASE_API_KEY}"
@@ -192,19 +188,16 @@ def login_view(request):
     res_data = res.json()
 
     if res.status_code == 200:
-        uid = res_data['localId']
-        # 4) أنشئي الجلسة
         request.session['uid'] = uid
         request.session.set_expiry(1209600 if remember_me else 0)
         return Response({"message": "تم تسجيل الدخول", "uid": uid})
 
-    # 5) في حال فشل، رجّعي رسالة خطأ مفصّلة
     firebase_error = res_data.get('error', {}).get('message', '')
     return Response(
         {"message": "بيانات خاطئة", "firebase_error": firebase_error},
         status=status.HTTP_401_UNAUTHORIZED
     )
-    
+
 
 @api_view(['GET'])
 def me(request):
@@ -215,4 +208,5 @@ def me(request):
     doc = db.collection('users').document(uid).get()
     if not doc.exists:
         return Response({"error": "المستخدم غير موجود."}, status=status.HTTP_404_NOT_FOUND)
+
     return Response({"user": doc.to_dict()})
