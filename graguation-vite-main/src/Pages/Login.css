@@ -12,7 +12,10 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #70dc81, #6366f1);
+  /* background: linear-gradient(135deg, #70dc81, #6366f1); */
+  background-image:url('../assets/Desktop1.png');
+  background-size: cover;
+  background-position: center;
 }
 
 .login-card {
@@ -116,7 +119,8 @@
 .login-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(to right, #70dc81, #6366f1);
+  /* background: linear-gradient(to right, #70dc81, #6366f1); */
+  background-color: #70dc81;
   color: white;
   border: none;
   border-radius: 10px;
@@ -128,7 +132,7 @@
 }
 
 .login-button:hover {
-  background: linear-gradient(to right, #70dc81, #6366f1);
+  /* background: linear-gradient(to right, #70dc81, #6366f1); */
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }

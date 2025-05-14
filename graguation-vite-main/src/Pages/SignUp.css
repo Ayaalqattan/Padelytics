@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -12,7 +12,174 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #6366f1, #70dc81);
+  background-image:url('../assets/Desktop1.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 0 20px;
+}
+
+.signup-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.signup-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.signup-header p {
+  color: #c7d2fe;
+  font-size: 16px;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c7d2fe;
+  width: 20px;
+  height: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(199, 210, 254, 0.3);
+  color: white;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: #c7d2fe;
+}
+
+.input-group input:focus {
+  border-color: #c7d2fe;
+  box-shadow: 0 0 0 2px rgba(199, 210, 254, 0.5);
+}
+
+.terms-agreement {
+  margin-bottom: 24px;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  color: #c7d2fe;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.terms-checkbox input {
+  margin-right: 2px;
+  margin-top: 4px;
+  width: 20px;
+  accent-color: #818cf8;
+}
+.terms-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.signup-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #70dc81;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.signup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.signup-button:active {
+  transform: translateY(0);
+}
+
+.login-link {
+  margin-top: 20px;
+  text-align: center;
+  color: #c7d2fe;
+  font-size: 14px;
+}
+
+.login-link button {
+  color: #a5b4fc;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.login-link button:hover {
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .signup-card {
+    padding: 30px 20px;
+  }
+  
+  .signup-header h1 {
+    font-size: 24px;
+  }
+  
+  .terms-checkbox {
+    font-size: 13px;
+  }
+} */
+ @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url('../assets/Desktop1.png');
+  background-size: cover;
+  background-position: center;
+  /* background: linear-gradient(135deg, #6366f1, #70dc81); */
 }
 
 .signup-card {
@@ -100,16 +267,6 @@
   accent-color: #818cf8;
 }
 
-/* .terms-link {
-  color: #a5b4fc;
-  font-weight: 500;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  padding: 0;
-} */
-
 .terms-link:hover {
   color: white;
   text-decoration: underline;
@@ -118,7 +275,8 @@
 .signup-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(to right, #6366f1, #70dc81);
+  /* background: linear-gradient(to right, #6366f1, #70dc81); */
+  background-color: #70dc81;
   color: white;
   border: none;
   border-radius: 10px;
@@ -131,7 +289,7 @@
 }
 
 .signup-button:hover {
-  background: linear-gradient(to right, #6366f1, #70dc81);
+  /* background: linear-gradient(to right, #6366f1, #70dc81); */
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -160,16 +318,93 @@
   color: white;
 }
 
+/* Styles for new form elements */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 6px;
+  color: white;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  color: #c7d2fe;
+  cursor: pointer;
+}
+
+.radio-option input {
+  margin-right: 8px;
+  accent-color: #818cf8;
+  cursor: pointer;
+}
+
+.select-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(199, 210, 254, 0.3);
+  color: white;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c7d2fe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.select-input option {
+  background-color: #2a2b38;
+  color: white;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
 @media (max-width: 480px) {
   .signup-card {
     padding: 30px 20px;
   }
-  
+    
   .signup-header h1 {
     font-size: 24px;
   }
-  
+    
   .terms-checkbox {
     font-size: 13px;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 10px;
   }
 }
