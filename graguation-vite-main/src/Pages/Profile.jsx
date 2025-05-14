@@ -253,47 +253,237 @@
 // }
 
 // export default Profile;
+// import { useState, useEffect } from 'react';
+// import axios from 'axios';  // استيراد axios
+// import './Profile.css';
+
+// function Profile() {
+//   const [userData, setUserData] = useState(null); // null في البداية، لحد ما البيانات تيجي من الـ API
+//   const [error, setError] = useState(null); // لتخزين أي خطأ في جلب البيانات
+
+//   // جلب البيانات من API باستخدام useEffect
+//   useEffect(() => {
+//     const fetchUserData = async () => {
+//       try {
+//         // هنا سيتم إرسال طلب إلى API الخاص بك في Django لعرض بيانات المستخدم باستخدام axios
+//         const response = await axios.get('http://localhost:8000/home/profile/', {
+//           withCredentials: true, // هنا نضيف withCredentials مع axios لتضمين الكوكيز مع الطلب
+//         });
+
+//         setUserData(response.data); // تخزين البيانات في الـ state
+//       } catch (error) {
+//         setError(error.message); // تخزين الخطأ في حال حدوثه
+//         console.error("Error fetching user data:", error);
+//       }
+//     };
+
+//     fetchUserData();
+//   }, []); // [] تعني أن الـ useEffect سيعمل مرة واحدة فقط عند تحميل الصفحة
+
+//   // لو لسه البيانات مابعدتش، هنظهر loading
+//   if (!userData) {
+//     return <div>Loading...</div>;
+//   }
+
+//   // لو في خطأ، هنظهر رسالة الخطأ
+//   if (error) {
+//     return <div>Error: {error}</div>;
+//   }
+
+//   // حساب نسبة الفوز
+//   const winRate = Math.round((userData.wins / userData.matches) * 100) || 0;
+
+//   // دالة لتحديد مستوى التقدم
+//   const getLevelProgress = (level) => {
+//     switch(level) {
+//       case "beginner": return 25;
+//       case "intermediate": return 65;
+//       case "professional": return 95;
+//       default: return 25;
+//     }
+//   };
+
+//   // دالة لاضافة صديق
+//   const handleAddFriend = () => {
+//     alert("Friend request feature would be implemented here");
+//   };
+
+//   return (
+//     <div className="container">
+//       <div className="profile-card">
+//         <div className="profile-header">
+//           <div className="profile-image">
+//             <img src={userData.profileImage} alt="Profile" />
+//           </div>
+//           <div className="profile-actions">
+//             <button className="btn btn-primary">Edit Profile</button>
+//           </div>
+//         </div>
+        
+//         <div className="profile-content">
+//           <h1 className="profile-name">{userData.name}</h1>
+//           <div className="profile-username">@{userData.username}</div>
+          
+//           <span className={`badge badge-${userData.level}`}>
+//             {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
+//           </span>
+          
+//           <div className="stats-container">
+//             <div className="stat-box">
+//               <div className="stat-title">MATCHES</div>
+//               <div className="stat-value">{userData.matches}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">WINS</div>
+//               <div className="stat-value win">{userData.wins}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">LOSSES</div>
+//               <div className="stat-value loss">{userData.losses}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">WIN RATE</div>
+//               <div className="stat-value">{winRate}%</div>
+//             </div>
+//           </div>
+          
+//           <div className="level-indicator">
+//             <div className="level-bar">
+//               <div 
+//                 className="level-progress" 
+//                 style={{ width: `${getLevelProgress(userData.level)}%` }}
+//               ></div>
+//             </div>
+//             <div className="level-marks">
+//               <div className="level-mark">Beginner</div>
+//               <div className="level-mark">Intermediate</div>
+//               <div className="level-mark">Professional</div>
+//             </div>
+//             <div 
+//               className="level-current" 
+//               style={{ left: `${getLevelProgress(userData.level)}%` }}
+//             >
+//               {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
+//             </div>
+//           </div>
+          
+//           <div className="friends-section">
+//             <div className="section-title">
+//               <div>Friends <span className="friend-count">({userData.friends.length})</span></div>
+//               <button className="add-friend-btn" onClick={handleAddFriend}>
+//                 <i className="fas fa-user-plus"></i> Add Friend
+//               </button>
+//             </div>
+//             <div className="friends-list">
+//               {userData.friends.map(friend => (
+//                 <div className="friend-item" key={friend.id}>
+//                   <div className="friend-avatar">
+//                     <img src={friend.image} alt={friend.name} />
+//                   </div>
+//                   <div className="friend-name">{friend.name}</div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Profile;
+
 import { useState, useEffect } from 'react';
-import axios from 'axios';  // استيراد axios
+import axios from 'axios';
 import './Profile.css';
 
 function Profile() {
-  const [userData, setUserData] = useState(null); // null في البداية، لحد ما البيانات تيجي من الـ API
-  const [error, setError] = useState(null); // لتخزين أي خطأ في جلب البيانات
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
-  // جلب البيانات من API باستخدام useEffect
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // هنا سيتم إرسال طلب إلى API الخاص بك في Django لعرض بيانات المستخدم باستخدام axios
+        console.log('Fetching user data...');
+        
+        // For debugging: check if the request is being made
         const response = await axios.get('http://localhost:8000/home/profile/', {
-          withCredentials: true, // هنا نضيف withCredentials مع axios لتضمين الكوكيز مع الطلب
+          withCredentials: true,
         });
-
-        setUserData(response.data); // تخزين البيانات في الـ state
+        
+        console.log('Response received:', response);
+        
+        setUserData(response.data);
+        setLoading(false); // Set loading to false once data is received
       } catch (error) {
-        setError(error.message); // تخزين الخطأ في حال حدوثه
         console.error("Error fetching user data:", error);
+        
+        // More detailed error logging
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Response data:", error.response.data);
+          console.error("Response status:", error.response.status);
+          console.error("Response headers:", error.response.headers);
+          setError(`Server error: ${error.response.status}`);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error("No response received:", error.request);
+          setError("No response from server. Is the backend running?");
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          setError(`Request error: ${error.message}`);
+        }
+        
+        setLoading(false); // Set loading to false even on error
       }
     };
 
     fetchUserData();
-  }, []); // [] تعني أن الـ useEffect سيعمل مرة واحدة فقط عند تحميل الصفحة
+  }, []);
 
-  // لو لسه البيانات مابعدتش، هنظهر loading
-  if (!userData) {
-    return <div>Loading...</div>;
+  // Show loading state
+  if (loading) {
+    return <div className="loading-container">Loading user data...</div>;
   }
 
-  // لو في خطأ، هنظهر رسالة الخطأ
+  // Show error if any
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="error-container">
+        <h3>Error loading profile</h3>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
   }
 
-  // حساب نسبة الفوز
+  // For testing: If the real API isn't working, use this mock data
+  if (!userData) {
+    // Mock data for testing UI when API is not available
+    const mockUserData = {
+      name: "Test User",
+      username: "testuser",
+      profileImage: "/api/placeholder/150/150",
+      level: "intermediate",
+      matches: 56,
+      wins: 32,
+      losses: 24,
+      friends: [
+        { id: 1, name: "Friend 1", image: "/api/placeholder/50/50" },
+        { id: 2, name: "Friend 2", image: "/api/placeholder/50/50" }
+      ]
+    };
+    
+    setUserData(mockUserData);
+    return <div>Loading with mock data...</div>;
+  }
+
+  // Calculate win rate
   const winRate = Math.round((userData.wins / userData.matches) * 100) || 0;
 
-  // دالة لتحديد مستوى التقدم
+  // Level progress determination function
   const getLevelProgress = (level) => {
     switch(level) {
       case "beginner": return 25;
@@ -303,7 +493,7 @@ function Profile() {
     }
   };
 
-  // دالة لاضافة صديق
+  // Handle adding friend
   const handleAddFriend = () => {
     alert("Friend request feature would be implemented here");
   };
@@ -313,7 +503,7 @@ function Profile() {
       <div className="profile-card">
         <div className="profile-header">
           <div className="profile-image">
-            <img src={userData.profileImage} alt="Profile" />
+            <img src={userData.profileImage || "/api/placeholder/150/150"} alt="Profile" />
           </div>
           <div className="profile-actions">
             <button className="btn btn-primary">Edit Profile</button>
@@ -369,16 +559,16 @@ function Profile() {
           
           <div className="friends-section">
             <div className="section-title">
-              <div>Friends <span className="friend-count">({userData.friends.length})</span></div>
+              <div>Friends <span className="friend-count">({userData.friends?.length || 0})</span></div>
               <button className="add-friend-btn" onClick={handleAddFriend}>
                 <i className="fas fa-user-plus"></i> Add Friend
               </button>
             </div>
             <div className="friends-list">
-              {userData.friends.map(friend => (
+              {userData.friends?.map(friend => (
                 <div className="friend-item" key={friend.id}>
                   <div className="friend-avatar">
-                    <img src={friend.image} alt={friend.name} />
+                    <img src={friend.image || "/api/placeholder/50/50"} alt={friend.name} />
                   </div>
                   <div className="friend-name">{friend.name}</div>
                 </div>
