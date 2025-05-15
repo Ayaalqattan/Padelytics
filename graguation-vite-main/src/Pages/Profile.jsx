@@ -774,6 +774,7 @@
 // export default Profile;
 
 import { useEffect, useState } from 'react';
+import './Profile.css';
 
 function Profile() {
   const [userData, setUserData] = useState(null);
@@ -864,33 +865,33 @@ function Profile() {
     }
   };
 
-  const getLevelBadgeColor = (level) => {
+  const getLevelClass = (level) => {
     switch (level?.toLowerCase()) {
-      case 'beginner': return 'bg-blue-100 text-blue-800';
-      case 'intermediate': return 'bg-green-100 text-green-800';
-      case 'advanced': return 'bg-purple-100 text-purple-800';
+      case 'beginner': return 'level-beginner';
+      case 'intermediate': return 'level-intermediate';
+      case 'advanced': return 'level-advanced';
       case 'pro':
-      case 'professional': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'professional': return 'level-pro';
+      default: return 'level-beginner';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
   if (error || !userData) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen">
-        <h3 className="text-red-600 text-xl font-semibold">Error loading profile</h3>
-        <p className="text-gray-700 mt-2">{error || 'Please sign in to view your profile.'}</p>
+      <div className="error-container">
+        <h3 className="error-title">Error loading profile</h3>
+        <p className="error-message">{error || 'Please sign in to view your profile.'}</p>
         <button 
           onClick={() => window.location.reload()} 
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="btn btn-primary"
         >
           Retry
         </button>
@@ -903,25 +904,25 @@ function Profile() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          {/* <h1 className="text-3xl font-bold text-gray-900">Player Profile</h1> */}
-          <div className="flex space-x-3">
+    <div className="profile-container">
+      <div className="container mx-auto px-4">
+        <div className="profile-header">
+          <h1 className="profile-title">Player Profile</h1>
+          <div className="btn-group">
             <button 
               onClick={toggleEditMode}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors flex items-center"
+              className="btn btn-primary"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
               {isEditing ? 'Cancel Edit' : 'Edit Profile'}
             </button>
             <button 
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center"
+              className="btn btn-danger"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414a1 1 0 00-.293-.707L11.414 2.414A1 1 0 0010.707 2H4a1 1 0 00-1 1zm9 2.414L15.586 7H12V5.414zM10 9a1 1 0 00-1 1v3a1 1 0 002 0v-3a1 1 0 00-1-1z" clipRule="evenodd" />
                 <path d="M3 8a1 1 0 011-1h4a1 1 0 010 2H4a1 1 0 01-1-1z" />
               </svg>
@@ -932,65 +933,61 @@ function Profile() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
-            <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-              <div className="relative h-32 bg-gradient-to-r from-blue-500 to-indigo-600">
-                <div className="absolute -bottom-12 inset-x-0 flex justify-center">
-                  <div className="ring-4 ring-white rounded-full">
-                    <img
-                      src={userData.profile_picture || 'https://via.placeholder.com/150'}
-                      alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover"
-                    />
-                  </div>
+            <div className="profile-card">
+              <div className="profile-banner">
+                <div className="profile-picture-container">
+                  <img
+                    src={userData.profile_picture || 'https://via.placeholder.com/150'}
+                    alt="Profile"
+                    className="profile-picture"
+                  />
                 </div>
               </div>
               
-              <div className="pt-16 pb-6 px-6">
-                <div className="flex flex-col items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">{userData.username || userData.name}</h2>
-                  <p className="text-gray-500 text-sm mt-1">{userData.email}</p>
-                  
-                  <div className="mt-3 flex items-center">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getLevelBadgeColor(userData.level)}`}>
-                      {userData.level?.charAt(0).toUpperCase() + userData.level?.slice(1) || 'Beginner'}
-                    </span>
-                  </div>
+              <div className="profile-info">
+                <h2 className="profile-name">{userData.username || userData.name}</h2>
+                <p className="profile-email">{userData.email}</p>
+                
+                <div className="mt-2">
+                  <span className={`level-badge ${getLevelClass(userData.level)}`}>
+                    {userData.level?.charAt(0).toUpperCase() + userData.level?.slice(1) || 'Beginner'}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
           
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-white shadow-lg rounded-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Performance Stats</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-blue-500 font-medium">Matches</p>
-                  <p className="text-2xl font-bold text-blue-700">{userData.stats?.matches || 0}</p>
+            <div className="section-card">
+              <h3 className="section-title">Performance Stats</h3>
+              <div className="stats-grid">
+                <div className="stat-card stat-matches">
+                  <p className="stat-label">Matches</p>
+                  <p className="stat-value">{userData.stats?.matches || 0}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-green-500 font-medium">Wins</p>
-                  <p className="text-2xl font-bold text-green-700">{userData.stats?.wins || 0}</p>
+                <div className="stat-card stat-wins">
+                  <p className="stat-label">Wins</p>
+                  <p className="stat-value">{userData.stats?.wins || 0}</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <p className="text-red-500 font-medium">Losses</p>
-                  <p className="text-2xl font-bold text-red-700">{userData.stats?.losses || 0}</p>
+                <div className="stat-card stat-losses">
+                  <p className="stat-label">Losses</p>
+                  <p className="stat-value">{userData.stats?.losses || 0}</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-purple-500 font-medium">Win Rate</p>
-                  <p className="text-2xl font-bold text-purple-700">{winRate}%</p>
+                <div className="stat-card stat-winrate">
+                  <p className="stat-label">Win Rate</p>
+                  <p className="stat-value">{winRate}%</p>
                 </div>
               </div>
               
-              <div className="mt-6">
-                <p className="text-gray-700 font-medium mb-2">Level Progress</p>
-                <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div className="progress-container">
+                <p className="progress-label">Level Progress</p>
+                <div className="progress-bar">
                   <div 
-                    className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-500" 
+                    className="progress-fill"
                     style={{ width: `${getLevelProgress(userData.level)}%` }}
                   ></div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                <div className="progress-markers">
                   <span>Beginner</span>
                   <span>Intermediate</span>
                   <span>Advanced</span>
@@ -999,69 +996,66 @@ function Profile() {
               </div>
             </div>
             
-            <div className="bg-white shadow-lg rounded-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Rewards & Achievements</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-gray-700 font-medium">Rewards</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {userData.rewards?.items?.length > 0 ? (
-                      userData.rewards.items.map((item, index) => (
-                        <span key={index} className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
-                          {item}
-                        </span>
-                      ))
-                    ) : (
-                      <p className="text-gray-500 italic">No rewards yet</p>
-                    )}
-                  </div>
+            <div className="section-card">
+              <h3 className="section-title">Rewards & Achievements</h3>
+              <div className="rewards-container">
+                <p className="rewards-label">Rewards</p>
+                <div className="rewards-list">
+                  {userData.rewards?.items?.length > 0 ? (
+                    userData.rewards.items.map((item, index) => (
+                      <span key={index} className="reward-tag">
+                        {item}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="no-rewards">No rewards yet</p>
+                  )}
                 </div>
-
               </div>
             </div>
             
-            <div className="bg-white shadow-lg rounded-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Friends</h3>
-              <form onSubmit={handleAddFriend} className="mb-6">
-                <div className="flex gap-2">
+            <div className="section-card">
+              <h3 className="section-title">Friends</h3>
+              <form onSubmit={handleAddFriend} className="friend-form">
+                <div className="form-group">
                   <input
                     type="email"
                     value={friendEmail}
                     onChange={(e) => setFriendEmail(e.target.value)}
                     placeholder="Enter friend's email"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="form-input"
                     required
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                    className="btn btn-primary"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                     </svg>
                     Add Friend
                   </button>
                 </div>
-                {friendError && <p className="mt-2 text-red-600 text-sm">{friendError}</p>}
-                {friendSuccess && <p className="mt-2 text-green-600 text-sm">{friendSuccess}</p>}
+                {friendError && <p className="form-error">{friendError}</p>}
+                {friendSuccess && <p className="form-success">{friendSuccess}</p>}
               </form>
               
-              <div className="space-y-3">
+              <div className="friends-list">
                 {friends.length > 0 ? (
                   friends.map((friend) => (
                     <div
                       key={friend.id}
-                      className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                      className="friend-card"
                     >
                       <img
                         src={friend.profile_picture || 'https://via.placeholder.com/40'}
                         alt={friend.name}
-                        className="w-10 h-10 rounded-full object-cover mr-3"
+                        className="friend-picture"
                       />
-                      <div>
-                        <p className="text-gray-900 font-medium">{friend.name}</p>
+                      <div className="friend-info">
+                        <p className="friend-name">{friend.name}</p>
                         {friend.level && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getLevelBadgeColor(friend.level)}`}>
+                          <span className={`friend-level ${getLevelClass(friend.level)}`}>
                             {friend.level}
                           </span>
                         )}
@@ -1069,9 +1063,9 @@ function Profile() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-500">No friends yet</p>
-                    <p className="text-sm text-gray-400 mt-1">Add friends using their email address</p>
+                  <div className="no-friends">
+                    <p className="no-friends-text">No friends yet</p>
+                    <p className="no-friends-subtext">Add friends using their email address</p>
                   </div>
                 )}
               </div>
