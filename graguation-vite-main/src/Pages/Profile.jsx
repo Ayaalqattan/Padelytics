@@ -787,7 +787,7 @@ function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/user-profile/', {
+        const response = await fetch('http://localhost:8000/home/profile/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

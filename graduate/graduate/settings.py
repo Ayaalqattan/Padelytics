@@ -48,17 +48,18 @@ INSTALLED_APPS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # ← رابط الواجهة React
+    "http://localhost:5173",
+      "http://localhost:8000",  # ← رابط الواجهة React
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:8000",
 ]
-
-SESSION_COOKIE_SAMESITE = 'None'  # السماح بإرسال الكوكيز عبر الـ cross-site requests
-CSRF_COOKIE_SAMESITE = 'None'    # تأكيد أن CSRF يتم إرساله عبر الـ cross-site requests
-SESSION_COOKIE_SECURE = False    # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
-CSRF_COOKIE_SECURE = False       # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False    # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',  # تفعيل المصادقة باستخدام الجلسة
@@ -70,10 +71,10 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

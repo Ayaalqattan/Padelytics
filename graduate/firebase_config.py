@@ -6,7 +6,7 @@ from django.conf import settings
 # مسار ملف الخدمة (Service Account) بالنسبة لجذر المشروع
 SERVICE_ACCOUNT_PATH = os.path.join(
     settings.BASE_DIR,
-    'padelytics-a587d-firebase-adminsdk-fbsvc-d719628557.json'
+    'padelytics-a587d-firebase-adminsdk-fbsvc-52d874cb74.json'
     
 )
 
