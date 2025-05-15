@@ -583,6 +583,196 @@
 
 // export default Profile;
 
+// import { useEffect, useState } from 'react';
+
+// function Profile() {
+//   const [userData, setUserData] = useState(null);
+//   const [friends, setFriends] = useState([]);
+//   const [friendEmail, setFriendEmail] = useState('');
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [friendError, setFriendError] = useState(null);
+//   const [friendSuccess, setFriendSuccess] = useState(null);
+
+//   useEffect(() => {
+//     const fetchUserData = async () => {
+//       try {
+//         const response = await fetch('http://localhost:8000/api/user-profile/', {
+//           method: 'GET',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': `Bearer ${localStorage.getItem('token')}`
+//           },
+//         });
+
+//         if (!response.ok) {
+//           throw new Error('Failed to fetch user data');
+//         }
+
+//         const data = await response.json();
+//         setUserData(data);
+//         setFriends(data.friends || []); // Assuming friends are included in user data
+//       } catch (err) {
+//         setError(err.message);
+//         console.error('Error fetching user data:', err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchUserData();
+//   }, []);
+
+//   const handleAddFriend = async (e) => {
+//     e.preventDefault();
+//     setFriendError(null);
+//     setFriendSuccess(null);
+
+//     try {
+//       const response = await fetch('http://localhost:8000/api/add-friend/', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${localStorage.getItem('token')}`
+//         },
+//         body: JSON.stringify({ email: friendEmail })
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to add friend');
+//       }
+
+//       const data = await response.json();
+//       setFriends([...friends, data.friend]);
+//       setFriendSuccess('Friend added successfully!');
+//       setFriendEmail('');
+//     } catch (err) {
+//       setFriendError(err.message);
+//       console.error('Error adding friend:', err);
+//     }
+//   };
+
+//   if (loading) {
+//     return <div className="flex justify-center items-center h-screen">Loading...</div>;
+//   }
+
+//   if (error || !userData) {
+//     return <div className="flex justify-center items-center h-screen">{error || 'Please sign in to view your profile.'}</div>;
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 py-8">
+//       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+//         <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Player Profile</h1>
+//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+//           {/* User Info */}
+//           <div className="md:col-span-1">
+//             <div className="bg-white shadow rounded-lg p-6">
+//               <div className="flex flex-col items-center">
+//                 <img
+//                   src={userData.profile_picture || 'https://via.placeholder.com/150'}
+//                   alt="Profile"
+//                   className="w-24 h-24 rounded-full mb-4"
+//                 />
+//                 <h2 className="text-xl font-semibold text-gray-900">{userData.name}</h2>
+//                 <p className="text-gray-600">{userData.email}</p>
+//               </div>
+//             </div>
+//           </div>
+//           {/* Performance Stats, Rewards, and Friends */}
+//           <div className="md:col-span-2 space-y-6">
+//             {/* Performance Stats */}
+//             <div className="bg-white shadow rounded-lg p-6">
+//               <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Stats</h3>
+//               <div className="grid grid-cols-2 gap-4">
+//                 <div>
+//                   <p className="text-gray-600">Wins</p>
+//                   <p className="text-xl font-bold text-green-600">{userData.stats?.wins || 0}</p>
+//                 </div>
+//                 <div>
+//                   <p className="text-gray-600">Losses</p>
+//                   <p className="text-xl font-bold text-red-600">{userData.stats?.losses || 0}</p>
+//                 </div>
+//                 <div>
+//                   <p className="text-gray-600">Rank</p>
+//                   <p className="text-xl font-bold text-blue-600">{userData.stats?.rank || 'Unranked'}</p>
+//                 </div>
+//                 <div>
+//                   <p className="text-gray-600">Confidence</p>
+//                   <p className="text-xl font-bold text-purple-600">{userData.stats?.confidence || 0}%</p>
+//                 </div>
+//               </div>
+//             </div>
+//             {/* Rewards Section */}
+//             <div className="bg-white shadow rounded-lg p-6">
+//               <h3 className="text-lg font-semibold text-gray-900 mb-4">Rewards & Achievements</h3>
+//               <div className="space-y-4">
+//                 <div>
+//                   <p className="text-gray-600">Rewards</p>
+//                   <p className="text-lg font-medium text-gray-900">
+//                     {userData.rewards?.items?.length > 0 ? userData.rewards.items.join(', ') : 'No rewards yet'}
+//                   </p>
+//                 </div>
+//                 <div>
+//                   <p className="text-gray-600">Governance</p>
+//                   <p className="text-lg font-medium text-gray-900">
+//                     {userData.rewards?.governance || 'No governance roles'}
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+//             {/* Friends Section */}
+//             <div className="bg-white shadow rounded-lg p-6">
+//               <h3 className="text-lg font-semibold text-gray-900 mb-4">Friends</h3>
+//               <form onSubmit={handleAddFriend} className="mb-4">
+//                 <div className="flex gap-2">
+//                   <input
+//                     type="email"
+//                     value={friendEmail}
+//                     onChange={(e) => setFriendEmail(e.target.value)}
+//                     placeholder="Enter friend's email"
+//                     className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                     required
+//                   />
+//                   <button
+//                     type="submit"
+//                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+//                   >
+//                     Add Friend
+//                   </button>
+//                 </div>
+//                 {friendError && <p className="mt-2 text-red-600">{friendError}</p>}
+//                 {friendSuccess && <p className="mt-2 text-green-600">{friendSuccess}</p>}
+//               </form>
+//               <div className="space-y-2">
+//                 {friends.length > 0 ? (
+//                   friends.map((friend) => (
+//                     <div
+//                       key={friend.id}
+//                       className="flex items-center p-2 bg-gray-50 rounded-lg"
+//                     >
+//                       <img
+//                         src={friend.profile_picture || 'https://via.placeholder.com/40'}
+//                         alt={friend.name}
+//                         className="w-10 h-10 rounded-full mr-3"
+//                       />
+//                       <p className="text-gray-900">{friend.name}</p>
+//                     </div>
+//                   ))
+//                 ) : (
+//                   <p className="text-gray-600">No friends yet</p>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Profile;
+
 import { useEffect, useState } from 'react';
 
 function Profile() {
@@ -603,15 +793,16 @@ function Profile() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
+          credentials: 'include'
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch user data');
+          throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
         setUserData(data);
-        setFriends(data.friends || []); // Assuming friends are included in user data
+        setFriends(data.friends || []);
       } catch (err) {
         setError(err.message);
         console.error('Error fetching user data:', err);
@@ -652,20 +843,43 @@ function Profile() {
     }
   };
 
+  const getLevelProgress = (level) => {
+    switch (level?.toLowerCase()) {
+      case 'beginner': return 25;
+      case 'intermediate': return 65;
+      case 'professional': return 95;
+      default: return 25;
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   if (error || !userData) {
-    return <div className="flex justify-center items-center h-screen">{error || 'Please sign in to view your profile.'}</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen">
+        <h3 className="text-red-600">Error loading profile</h3>
+        <p>{error || 'Please sign in to view your profile.'}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
+
+  const winRate = userData.stats?.matches > 0 
+    ? Math.round((userData.stats.wins / userData.stats.matches) * 100) 
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Player Profile</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* User Info */}
           <div className="md:col-span-1">
             <div className="bg-white shadow rounded-lg p-6">
               <div className="flex flex-col items-center">
@@ -676,15 +890,20 @@ function Profile() {
                 />
                 <h2 className="text-xl font-semibold text-gray-900">{userData.name}</h2>
                 <p className="text-gray-600">{userData.email}</p>
+                <span className={`mt-2 badge badge-${userData.level?.toLowerCase()}`}>
+                  {userData.level?.charAt(0).toUpperCase() + userData.level?.slice(1)}
+                </span>
               </div>
             </div>
           </div>
-          {/* Performance Stats, Rewards, and Friends */}
           <div className="md:col-span-2 space-y-6">
-            {/* Performance Stats */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Stats</h3>
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600">Matches</p>
+                  <p className="text-xl font-bold text-blue-600">{userData.stats?.matches || 0}</p>
+                </div>
                 <div>
                   <p className="text-gray-600">Wins</p>
                   <p className="text-xl font-bold text-green-600">{userData.stats?.wins || 0}</p>
@@ -694,16 +913,25 @@ function Profile() {
                   <p className="text-xl font-bold text-red-600">{userData.stats?.losses || 0}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Rank</p>
-                  <p className="text-xl font-bold text-blue-600">{userData.stats?.rank || 'Unranked'}</p>
+                  <p className="text-gray-600">Win Rate</p>
+                  <p className="text-xl font-bold text-purple-600">{winRate}%</p>
                 </div>
-                <div>
-                  <p className="text-gray-600">Confidence</p>
-                  <p className="text-xl font-bold text-purple-600">{userData.stats?.confidence || 0}%</p>
+              </div>
+              <div className="mt-6">
+                <p className="text-gray-600 mb-2">Level Progress</p>
+                <div className="level-bar bg-gray-200 rounded-full h-4 relative">
+                  <div 
+                    className="level-progress bg-blue-500 h-4 rounded-full" 
+                    style={{ width: `${getLevelProgress(userData.level)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600 mt-1">
+                  <span>Beginner</span>
+                  <span>Intermediate</span>
+                  <span>Professional</span>
                 </div>
               </div>
             </div>
-            {/* Rewards Section */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Rewards & Achievements</h3>
               <div className="space-y-4">
@@ -721,7 +949,6 @@ function Profile() {
                 </div>
               </div>
             </div>
-            {/* Friends Section */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Friends</h3>
               <form onSubmit={handleAddFriend} className="mb-4">
