@@ -393,186 +393,376 @@
 
 // export default Profile;
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import './Profile.css';
+// import { useState, useEffect } from 'react';
+// import axios from 'axios';
+// import './Profile.css';
+
+// function Profile() {
+//   const [userData, setUserData] = useState(null);
+//   const [error, setError] = useState(null);
+//   const [loading, setLoading] = useState(true); // Add loading state
+
+//   useEffect(() => {
+//     const fetchUserData = async () => {
+//       try {
+//         console.log('Fetching user data...');
+        
+//         // For debugging: check if the request is being made
+//         const response = await axios.get('http://localhost:8000/home/profile/', {
+//           withCredentials: true,
+//         });
+        
+//         console.log('Response received:', response);
+        
+//         setUserData(response.data);
+//         setLoading(false); // Set loading to false once data is received
+//       } catch (error) {
+//         console.error("Error fetching user data:", error);
+        
+//         // More detailed error logging
+//         if (error.response) {
+//           // The request was made and the server responded with a status code
+//           // that falls out of the range of 2xx
+//           console.error("Response data:", error.response.data);
+//           console.error("Response status:", error.response.status);
+//           console.error("Response headers:", error.response.headers);
+//           setError(`Server error: ${error.response.status}`);
+//         } else if (error.request) {
+//           // The request was made but no response was received
+//           console.error("No response received:", error.request);
+//           setError("No response from server. Is the backend running?");
+//         } else {
+//           // Something happened in setting up the request that triggered an Error
+//           setError(`Request error: ${error.message}`);
+//         }
+        
+//         setLoading(false); // Set loading to false even on error
+//       }
+//     };
+
+//     fetchUserData();
+//   }, []);
+
+//   // Show loading state
+//   if (loading) {
+//     return <div className="loading-container">Loading user data...</div>;
+//   }
+
+//   // Show error if any
+//   if (error) {
+//     return (
+//       <div className="error-container">
+//         <h3>Error loading profile</h3>
+//         <p>{error}</p>
+//         <button onClick={() => window.location.reload()}>Retry</button>
+//       </div>
+//     );
+//   }
+
+//   // For testing: If the real API isn't working, use this mock data
+//   if (!userData) {
+//     // Mock data for testing UI when API is not available
+//     const mockUserData = {
+//       name: "Test User",
+//       username: "testuser",
+//       profileImage: "/api/placeholder/150/150",
+//       level: "intermediate",
+//       matches: 56,
+//       wins: 32,
+//       losses: 24,
+//       friends: [
+//         { id: 1, name: "Friend 1", image: "/api/placeholder/50/50" },
+//         { id: 2, name: "Friend 2", image: "/api/placeholder/50/50" }
+//       ]
+//     };
+    
+//     setUserData(mockUserData);
+//     return <div>Loading with mock data...</div>;
+//   }
+
+//   // Calculate win rate
+//   const winRate = Math.round((userData.wins / userData.matches) * 100) || 0;
+
+//   // Level progress determination function
+//   const getLevelProgress = (level) => {
+//     switch(level) {
+//       case "beginner": return 25;
+//       case "intermediate": return 65;
+//       case "professional": return 95;
+//       default: return 25;
+//     }
+//   };
+
+//   // Handle adding friend
+//   const handleAddFriend = () => {
+//     alert("Friend request feature would be implemented here");
+//   };
+
+//   return (
+//     <div className="container">
+//       <div className="profile-card">
+//         <div className="profile-header">
+//           <div className="profile-image">
+//             <img src={userData.profileImage || "/api/placeholder/150/150"} alt="Profile" />
+//           </div>
+//           <div className="profile-actions">
+//             <button className="btn btn-primary">Edit Profile</button>
+//           </div>
+//         </div>
+        
+//         <div className="profile-content">
+//           <h1 className="profile-name">{userData.name}</h1>
+//           <div className="profile-username">@{userData.username}</div>
+          
+//           <span className={`badge badge-${userData.level}`}>
+//             {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
+//           </span>
+          
+//           <div className="stats-container">
+//             <div className="stat-box">
+//               <div className="stat-title">MATCHES</div>
+//               <div className="stat-value">{userData.matches}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">WINS</div>
+//               <div className="stat-value win">{userData.wins}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">LOSSES</div>
+//               <div className="stat-value loss">{userData.losses}</div>
+//             </div>
+//             <div className="stat-box">
+//               <div className="stat-title">WIN RATE</div>
+//               <div className="stat-value">{winRate}%</div>
+//             </div>
+//           </div>
+          
+//           <div className="level-indicator">
+//             <div className="level-bar">
+//               <div 
+//                 className="level-progress" 
+//                 style={{ width: `${getLevelProgress(userData.level)}%` }}
+//               ></div>
+//             </div>
+//             <div className="level-marks">
+//               <div className="level-mark">Beginner</div>
+//               <div className="level-mark">Intermediate</div>
+//               <div className="level-mark">Professional</div>
+//             </div>
+//             <div 
+//               className="level-current" 
+//               style={{ left: `${getLevelProgress(userData.level)}%` }}
+//             >
+//               {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
+//             </div>
+//           </div>
+          
+//           <div className="friends-section">
+//             <div className="section-title">
+//               <div>Friends <span className="friend-count">({userData.friends?.length || 0})</span></div>
+//               <button className="add-friend-btn" onClick={handleAddFriend}>
+//                 <i className="fas fa-user-plus"></i> Add Friend
+//               </button>
+//             </div>
+//             <div className="friends-list">
+//               {userData.friends?.map(friend => (
+//                 <div className="friend-item" key={friend.id}>
+//                   <div className="friend-avatar">
+//                     <img src={friend.image || "/api/placeholder/50/50"} alt={friend.name} />
+//                   </div>
+//                   <div className="friend-name">{friend.name}</div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Profile;
+
+import { useEffect, useState } from 'react';
 
 function Profile() {
   const [userData, setUserData] = useState(null);
+  const [friends, setFriends] = useState([]);
+  const [friendEmail, setFriendEmail] = useState('');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [friendError, setFriendError] = useState(null);
+  const [friendSuccess, setFriendSuccess] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log('Fetching user data...');
-        
-        // For debugging: check if the request is being made
-        const response = await axios.get('http://localhost:8000/home/profile/', {
-          withCredentials: true,
+        const response = await fetch('http://localhost:8000/api/user-profile/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
         });
-        
-        console.log('Response received:', response);
-        
-        setUserData(response.data);
-        setLoading(false); // Set loading to false once data is received
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        
-        // More detailed error logging
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error("Response data:", error.response.data);
-          console.error("Response status:", error.response.status);
-          console.error("Response headers:", error.response.headers);
-          setError(`Server error: ${error.response.status}`);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error("No response received:", error.request);
-          setError("No response from server. Is the backend running?");
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          setError(`Request error: ${error.message}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
         }
-        
-        setLoading(false); // Set loading to false even on error
+
+        const data = await response.json();
+        setUserData(data);
+        setFriends(data.friends || []); // Assuming friends are included in user data
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching user data:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUserData();
   }, []);
 
-  // Show loading state
-  if (loading) {
-    return <div className="loading-container">Loading user data...</div>;
-  }
+  const handleAddFriend = async (e) => {
+    e.preventDefault();
+    setFriendError(null);
+    setFriendSuccess(null);
 
-  // Show error if any
-  if (error) {
-    return (
-      <div className="error-container">
-        <h3>Error loading profile</h3>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
-      </div>
-    );
-  }
+    try {
+      const response = await fetch('http://localhost:8000/api/add-friend/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ email: friendEmail })
+      });
 
-  // For testing: If the real API isn't working, use this mock data
-  if (!userData) {
-    // Mock data for testing UI when API is not available
-    const mockUserData = {
-      name: "Test User",
-      username: "testuser",
-      profileImage: "/api/placeholder/150/150",
-      level: "intermediate",
-      matches: 56,
-      wins: 32,
-      losses: 24,
-      friends: [
-        { id: 1, name: "Friend 1", image: "/api/placeholder/50/50" },
-        { id: 2, name: "Friend 2", image: "/api/placeholder/50/50" }
-      ]
-    };
-    
-    setUserData(mockUserData);
-    return <div>Loading with mock data...</div>;
-  }
+      if (!response.ok) {
+        throw new Error('Failed to add friend');
+      }
 
-  // Calculate win rate
-  const winRate = Math.round((userData.wins / userData.matches) * 100) || 0;
-
-  // Level progress determination function
-  const getLevelProgress = (level) => {
-    switch(level) {
-      case "beginner": return 25;
-      case "intermediate": return 65;
-      case "professional": return 95;
-      default: return 25;
+      const data = await response.json();
+      setFriends([...friends, data.friend]);
+      setFriendSuccess('Friend added successfully!');
+      setFriendEmail('');
+    } catch (err) {
+      setFriendError(err.message);
+      console.error('Error adding friend:', err);
     }
   };
 
-  // Handle adding friend
-  const handleAddFriend = () => {
-    alert("Friend request feature would be implemented here");
-  };
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  if (error || !userData) {
+    return <div className="flex justify-center items-center h-screen">{error || 'Please sign in to view your profile.'}</div>;
+  }
 
   return (
-    <div className="container">
-      <div className="profile-card">
-        <div className="profile-header">
-          <div className="profile-image">
-            <img src={userData.profileImage || "/api/placeholder/150/150"} alt="Profile" />
-          </div>
-          <div className="profile-actions">
-            <button className="btn btn-primary">Edit Profile</button>
-          </div>
-        </div>
-        
-        <div className="profile-content">
-          <h1 className="profile-name">{userData.name}</h1>
-          <div className="profile-username">@{userData.username}</div>
-          
-          <span className={`badge badge-${userData.level}`}>
-            {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
-          </span>
-          
-          <div className="stats-container">
-            <div className="stat-box">
-              <div className="stat-title">MATCHES</div>
-              <div className="stat-value">{userData.matches}</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-title">WINS</div>
-              <div className="stat-value win">{userData.wins}</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-title">LOSSES</div>
-              <div className="stat-value loss">{userData.losses}</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-title">WIN RATE</div>
-              <div className="stat-value">{winRate}%</div>
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Player Profile</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* User Info */}
+          <div className="md:col-span-1">
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex flex-col items-center">
+                <img
+                  src={userData.profile_picture || 'https://via.placeholder.com/150'}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full mb-4"
+                />
+                <h2 className="text-xl font-semibold text-gray-900">{userData.name}</h2>
+                <p className="text-gray-600">{userData.email}</p>
+              </div>
             </div>
           </div>
-          
-          <div className="level-indicator">
-            <div className="level-bar">
-              <div 
-                className="level-progress" 
-                style={{ width: `${getLevelProgress(userData.level)}%` }}
-              ></div>
-            </div>
-            <div className="level-marks">
-              <div className="level-mark">Beginner</div>
-              <div className="level-mark">Intermediate</div>
-              <div className="level-mark">Professional</div>
-            </div>
-            <div 
-              className="level-current" 
-              style={{ left: `${getLevelProgress(userData.level)}%` }}
-            >
-              {userData.level.charAt(0).toUpperCase() + userData.level.slice(1)}
-            </div>
-          </div>
-          
-          <div className="friends-section">
-            <div className="section-title">
-              <div>Friends <span className="friend-count">({userData.friends?.length || 0})</span></div>
-              <button className="add-friend-btn" onClick={handleAddFriend}>
-                <i className="fas fa-user-plus"></i> Add Friend
-              </button>
-            </div>
-            <div className="friends-list">
-              {userData.friends?.map(friend => (
-                <div className="friend-item" key={friend.id}>
-                  <div className="friend-avatar">
-                    <img src={friend.image || "/api/placeholder/50/50"} alt={friend.name} />
-                  </div>
-                  <div className="friend-name">{friend.name}</div>
+          {/* Performance Stats, Rewards, and Friends */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Performance Stats */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Stats</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600">Wins</p>
+                  <p className="text-xl font-bold text-green-600">{userData.stats?.wins || 0}</p>
                 </div>
-              ))}
+                <div>
+                  <p className="text-gray-600">Losses</p>
+                  <p className="text-xl font-bold text-red-600">{userData.stats?.losses || 0}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Rank</p>
+                  <p className="text-xl font-bold text-blue-600">{userData.stats?.rank || 'Unranked'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Confidence</p>
+                  <p className="text-xl font-bold text-purple-600">{userData.stats?.confidence || 0}%</p>
+                </div>
+              </div>
+            </div>
+            {/* Rewards Section */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Rewards & Achievements</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-gray-600">Rewards</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {userData.rewards?.items?.length > 0 ? userData.rewards.items.join(', ') : 'No rewards yet'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Governance</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {userData.rewards?.governance || 'No governance roles'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {/* Friends Section */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Friends</h3>
+              <form onSubmit={handleAddFriend} className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={friendEmail}
+                    onChange={(e) => setFriendEmail(e.target.value)}
+                    placeholder="Enter friend's email"
+                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    Add Friend
+                  </button>
+                </div>
+                {friendError && <p className="mt-2 text-red-600">{friendError}</p>}
+                {friendSuccess && <p className="mt-2 text-green-600">{friendSuccess}</p>}
+              </form>
+              <div className="space-y-2">
+                {friends.length > 0 ? (
+                  friends.map((friend) => (
+                    <div
+                      key={friend.id}
+                      className="flex items-center p-2 bg-gray-50 rounded-lg"
+                    >
+                      <img
+                        src={friend.profile_picture || 'https://via.placeholder.com/40'}
+                        alt={friend.name}
+                        className="w-10 h-10 rounded-full mr-3"
+                      />
+                      <p className="text-gray-900">{friend.name}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-600">No friends yet</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
