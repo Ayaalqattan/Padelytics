@@ -12,8 +12,7 @@ from .views import VideoUploadView  # استيراد الـ API لرفع الف�
 #     path('upload-api/', VideoUploadView.as_view(), name='video-upload'),  # API لرفع الفيديوهات
 # ]
 from django.urls import path
-from .views import ShopView, ContactView, VideoUploadView
-from .views import profile
+from .views import ShopView, ContactView, VideoUploadView,profile,ProfilePictureUpdateView, csrf, tournaments_list
 
 urlpatterns = [
     path('profile/', profile, name='profile'),
@@ -22,4 +21,11 @@ urlpatterns = [
     path('contact-api/', ContactView.as_view(), name='contact-api'),  # API للـ contact
    # path('profile-api/', ProfileView.as_view(), name='profile-api'),  # API للـ profile
     path('upload-api/', VideoUploadView.as_view(), name='video-upload'),
+    path('profile/picture/', ProfilePictureUpdateView .as_view(), name='profile_picture_upload'),
+        path('api/csrf/',  csrf),
+        path('tournaments/', tournaments_list, name='tournaments-list')
+
+    
+
+   
 ]

@@ -45,11 +45,13 @@ INSTALLED_APPS = [
     'corsheaders',
 
 ]
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-      "http://localhost:8000",  # ← رابط الواجهة React
+    "http://localhost:8000", 
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -72,11 +74,15 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+     'django.middleware.common.CommonMiddleware',
+     'django.middleware.csrf.CsrfViewMiddleware',
+     'Home.middleware.CheckCSRFMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+   
+    
+    
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -104,6 +110,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'graduate.wsgi.application'
 FIREBASE_API_KEY= "AIzaSyBlWYhG8sSKRCqn4t6Qp_T30xhf-gvwLwI"
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

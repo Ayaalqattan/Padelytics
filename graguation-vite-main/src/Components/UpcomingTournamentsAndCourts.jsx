@@ -78,10 +78,9 @@ function UpcomingTournamentsAndCourts() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Replace with your actual API endpoint
     const fetchTournaments = async () => {
       try {
-        const response = await fetch('/api/tournaments');
+        const response = await fetch('http://localhost:8000/home/tournaments');
         if (!response.ok) {
           throw new Error('Failed to fetch tournaments');
         }
@@ -120,14 +119,21 @@ function UpcomingTournamentsAndCourts() {
                 className="carousel-item relative w-full"
               >
                 <div className="flex flex-col items-center w-full">
-                  <img
-                    src={tournament.image}
-                    alt={tournament.tournamentName}
-                    className="h-85 object-cover"
-                  />
+                  <a
+                    href={tournament.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={tournament.image}
+                      alt={tournament.tournamentName}
+                      className="h-85 object-cover cursor-pointer"
+                    />
+                  </a>
                   <div className="text-center mt-4 text-white">
                     <h3 className="text-lg font-bold">{tournament.tournamentName}</h3>
-                    <p>Date: {new Date(tournament.date).toLocaleDateString()}</p>
+                    {console.log("Tournament Date:", tournament.date)}
+                    <p>Date: {tournament.date}</p>
                     <p>Location: {tournament.location}</p>
                     <p>Prize: ${tournament.prize}</p>
                     <p>Registration Fee: ${tournament.registrationFees}</p>

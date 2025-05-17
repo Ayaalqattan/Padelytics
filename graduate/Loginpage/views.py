@@ -210,3 +210,11 @@ def me(request):
         return Response({"error": "المستخدم غير موجود."}, status=status.HTTP_404_NOT_FOUND)
 
     return Response({"user": doc.to_dict()})
+
+@api_view(['POST'])
+def logout_view(request):
+    try:
+        request.session.flush()  # حذف كل بيانات الجلسة
+        return Response({"message": "تم تسجيل الخروج بنجاح"})
+    except Exception as e:
+        return Response({"error": f"حدث خطأ أثناء تسجيل الخروج: {str(e)}"}, status=500)

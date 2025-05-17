@@ -50,6 +50,8 @@ class ContactView(APIView):
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from firebase_config import db
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 @csrf_exempt
 @api_view(['GET'])
 def profile(request):
@@ -74,5 +76,40 @@ def profile(request):
         })
     else:
         return Response({"message": "المستخدم غير موجود"}, status=404)
-    
-      
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from Loginpage.serializers import ProfileSerializer
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+
+class ProfilePictureUpdateView(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        profile = request.user.profile
+        data = request.data.copy()
+        if 'profile_picture' in request.FILES:
+            data['profile_picture'] = request.FILES['profile_picture']
+
+        serializer = ProfileSerializer(profile, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from django.http import JsonResponse
+from .firebase_services import get_all_tournaments
+
+def tournaments_list(request):
+    if request.method == 'GET':
+        tournaments = get_all_tournaments()
+        return JsonResponse(tournaments, safe=False)
