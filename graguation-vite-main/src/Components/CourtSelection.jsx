@@ -1,14 +1,63 @@
+import { useState, useEffect } from 'react';
+
 function CourtSelection({ selectedCourt, setSelectedCourt }) {
-    const courts = [
-      { id: 'padel yard', name: 'Padel Yard Kafr El Sheikh' },
-      { id: 'Padel Planet', name: 'Padel Planet Kafr El Sheikh' },
-      { id: 'JOo Academy', name: 'JOo Academy Kafr El Sheikh' },
-      { id: 'City Padel', name: 'City Padel Desouk' }
-    ];
-  
+  const [courts, setCourts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCourts = async () => {
+      try {
+        setLoading(true);
+        // Replace with your actual API endpoint
+        const response = await fetch('/api/courts');
+        
+        if (!response.ok) {
+          throw new Error(`Error fetching courts: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setCourts(data);
+      } catch (err) {
+        console.error("Failed to fetch courts:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourts();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4">
-        {courts.map((court) => (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2">Loading courts...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+        <p>Failed to load courts: {error}</p>
+        <button 
+          className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded-md text-sm"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {courts.length === 0 ? (
+        <p className="col-span-2 text-center text-gray-500">No courts available</p>
+      ) : (
+        courts.map((court) => (
           <button
             key={court.id}
             type="button"
@@ -25,9 +74,10 @@ function CourtSelection({ selectedCourt, setSelectedCourt }) {
           >
             {court.name}
           </button>
-        ))}
-      </div>
-    );
-  }
-  
-  export default CourtSelection;
+        ))
+      )}
+    </div>
+  );
+}
+
+export default CourtSelection;
