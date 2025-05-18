@@ -55,7 +55,7 @@ from rest_framework.permissions import IsAuthenticated
 @csrf_exempt
 @api_view(['GET'])
 def profile(request):
-    print("UID from session:", request.session.get('uid')),
+    
     uid = request.session.get('uid')  # جلب الـ uid من الجلسة
 
     if not uid:
@@ -67,7 +67,7 @@ def profile(request):
         return Response({
             "username": user_data.get("username", ""),
             "name": user_data.get("name", ""),
-            "level": user_data.get("level", "beginner"),
+            "level": user_data.get("level",""),
             "wins": user_data.get("wins", 0),
             "losses": user_data.get("losses", 0),
             "matches": user_data.get("matches", 0),
@@ -86,6 +86,8 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from firebase_admin import auth as firebase_auth
+
 
 @ensure_csrf_cookie
 def csrf(request):
@@ -113,3 +115,51 @@ def tournaments_list(request):
     if request.method == 'GET':
         tournaments = get_all_tournaments()
         return JsonResponse(tournaments, safe=False)
+@api_view(['POST'])
+@csrf_exempt
+def update_profile(request):
+    uid = request.session.get('uid')
+    if not uid:
+        return Response({"message": "غير مسجل الدخول"}, status=401)
+
+    username = request.data.get('username')
+    email = request.data.get('email')
+    level = request.data.get('level')
+
+    try:
+        user_ref = db.collection('users').document(uid)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return Response({"message": "المستخدم غير موجود"}, status=404)
+
+        current_data = user_doc.to_dict()
+
+        # ✅ تحقق من تكرار الاسم (إن وجد وتم تغييره)
+        if username and username != current_data.get('username'):
+            existing_username = db.collection('users').where('username', '==', username).stream()
+            if any(existing_username):
+                return Response({"message": "اسم المستخدم مستخدم بالفعل"}, status=400)
+
+        # ✅ تحقق من تكرار الإيميل (إن وجد وتم تغييره)
+        if email and email != current_data.get('email'):
+            existing_email = db.collection('users').where('email', '==', email).stream()
+            if any(existing_email):
+                return Response({"message": "البريد الإلكتروني مستخدم بالفعل"}, status=400)
+
+        # تحديث البيانات
+        updates = {}
+        if username: updates['username'] = username
+        if email: updates['email'] = email
+        if level: updates['level'] = level
+
+        user_ref.update(updates)
+
+        # تحديث البريد الإلكتروني في Firebase Auth
+        if email and email != current_data.get('email'):
+            firebase_auth.update_user(uid, email=email)
+
+        return Response({"message": "تم تحديث البيانات بنجاح"}, status=200)
+
+    except Exception as e:
+        return Response({"message": f"حدث خطأ أثناء التحديث: {str(e)}"}, status=400)

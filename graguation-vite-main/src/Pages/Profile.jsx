@@ -253,9 +253,10 @@
 // }
 
 // export default Profile;
-// دالة مساعدة لجلب CSRF Token من الكوكيز
-// import React, { useEffect, useState } from 'react';
-import { useEffect, useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
+
+
 import './Profile.css';
 
 // دالة مساعدة لجلب CSRF Token من الكوكيز

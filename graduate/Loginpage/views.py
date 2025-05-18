@@ -129,11 +129,12 @@ def signup(request):
     username = request.data.get("username")
     email    = request.data.get("email")
     password = request.data.get("password")
+    level    = request.data.get("level")  # ← إضافة هذا السطر
 
-    if not username or not email or not password:
+    if not username or not email or not password or not level:
         return Response({"message": "الرجاء إدخال جميع الحقول"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # تحقق من عدم وجود اسم المستخدم مسبقًا في جدول users
+    # تحقق من عدم وجود اسم المستخدم مسبقًا
     users_ref = db.collection('users')
     existing_user_query = users_ref.where('username', '==', username).stream()
     if any(existing_user_query):
@@ -143,11 +144,17 @@ def signup(request):
         # إنشاء المستخدم في Firebase Auth
         user = firebase_auth.create_user(email=email, password=password)
 
-        # حفظ بيانات المستخدم في جدول users فقط
+        # حفظ بيانات المستخدم في جدول users
         users_ref.document(user.uid).set({
             'email': email,
             'username': username,
-            'uid': user.uid
+            'uid': user.uid,
+            'level': level,  # ← حفظ المستوى هنا
+            'wins': 0,
+            'losses': 0,
+            'matches': 0,
+            'profileImage': '',
+            'friends': []
         })
 
         # إنشاء جلسة
@@ -157,6 +164,7 @@ def signup(request):
 
     except Exception as e:
         return Response({"message": f"حدث خطأ أثناء التسجيل: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['POST'])
