@@ -582,7 +582,7 @@ function getCSRFToken() {
 function Profile() {
   const [userData, setUserData] = useState(null);
   const [friends, setFriends] = useState([]);
-  const [friendEmail, setFriendEmail] = useState('');
+  const [friendUsername, setFriendUsername] = useState(''); // Changed from friendEmail to friendUsername
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [friendError, setFriendError] = useState(null);
@@ -590,7 +590,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   
-  // New state for form data
+  // State for form data
   const [formData, setFormData] = useState({
     username: '',
     level: 'beginner'
@@ -676,7 +676,7 @@ function Profile() {
     }
   };
 
-  // New function to handle input changes
+  // Function to handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -685,7 +685,7 @@ function Profile() {
     });
   };
 
-  // New function to handle profile update
+  // Function to handle profile update
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setUpdateError(null);
@@ -733,7 +733,7 @@ function Profile() {
           'Content-Type': 'application/json',
           'X-CSRFToken': getCSRFToken(),
         },
-        body: JSON.stringify({ email: friendEmail }),
+        body: JSON.stringify({ username: friendUsername }), // Changed from email to username
         credentials: 'include'
       });
 
@@ -744,7 +744,7 @@ function Profile() {
       const data = await response.json();
       setFriends([...friends, data.friend]);
       setFriendSuccess('Friend added successfully!');
-      setFriendEmail('');
+      setFriendUsername(''); // Changed from friendEmail
     } catch (err) {
       setFriendError(err.message);
       console.error('Error adding friend:', err);
@@ -962,10 +962,10 @@ function Profile() {
 
               <form onSubmit={handleAddFriend} className="add-friend-form">
                 <input
-                  type="email"
-                  value={friendEmail}
-                  onChange={(e) => setFriendEmail(e.target.value)}
-                  placeholder="Enter friend's email"
+                  type="text" // Changed from email to text
+                  value={friendUsername} // Changed from friendEmail
+                  onChange={(e) => setFriendUsername(e.target.value)} // Changed from friendEmail
+                  placeholder="Enter friend's username" // Updated placeholder
                   required
                 />
                 <button type="submit" className="btn btn-primary">Add Friend</button>
