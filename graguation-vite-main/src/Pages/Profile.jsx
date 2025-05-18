@@ -994,20 +994,29 @@
 import React, { useEffect, useState } from 'react';
 import './Profile.css';
 
-// Enhanced function to retrieve CSRF Token from cookies
+// Enhanced function to retrieve CSRF Token from cookies or HTML
 function getCSRFToken() {
+  // Try to get from cookies first
   const cookieValue = document.cookie
     .split('; ')
     .find(row => row.startsWith('csrftoken='));
   
-  if (!cookieValue) {
-    console.error('CSRF token not found in cookies');
-    return null;
+  if (cookieValue) {
+    const token = cookieValue.split('=')[1];
+    console.log('Found CSRF token in cookies:', token);
+    return token;
   }
   
-  const token = cookieValue.split('=')[1];
-  console.log('Found CSRF token:', token);
-  return token;
+  // If not in cookies, try to find it in the DOM (Django sometimes includes it)
+  const csrfInputElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+  if (csrfInputElement) {
+    const token = csrfInputElement.value;
+    console.log('Found CSRF token in DOM:', token);
+    return token;
+  }
+  
+  console.error('CSRF token not found in cookies or DOM');
+  return null;
 }
 
 function Profile() {
@@ -1030,89 +1039,110 @@ function Profile() {
   const [updateError, setUpdateError] = useState(null);
 
   useEffect(() => {
-    // First: Fetch CSRF token from server (so the server sends csrftoken cookie)
+    // First: Explicitly fetch CSRF token from server
     fetch('http://localhost:8000/api/csrf/', {
       credentials: 'include',
+      cache: 'no-store', // Prevent caching
     }).then(() => {
       // Log CSRF Token from cookies for debugging
       console.log('CSRF Token from cookies after /api/csrf/ call:', getCSRFToken());
 
       // After getting CSRF, fetch user data
-      fetch('http://localhost:8000/home/profile/', {
+      return fetch('http://localhost:8000/home/profile/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(), // Add token to GET request as well
         },
         credentials: 'include'
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          setUserData(data);
-          setFriends(data.friends || []);
-          // Initialize form data with current user data
-          setFormData({
-            username: data.username || data.name || '',
-            level: data.level || 'beginner'
-          });
-        })
-        .catch(err => {
-          setError(err.message);
-          console.error('Error fetching user data:', err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      });
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      return response.json();
+    }).then(data => {
+      setUserData(data);
+      setFriends(data.friends || []);
+      // Initialize form data with current user data
+      setFormData({
+        username: data.username || data.name || '',
+        level: data.level || 'beginner'
+      });
     }).catch(err => {
-      console.error('Error fetching CSRF token:', err);
+      setError(err.message);
+      console.error('Error fetching user data:', err);
+    }).finally(() => {
       setLoading(false);
-      setError('Failed to get CSRF token');
     });
   }, []);
 
-  // Enhanced file upload function with better error handling and CSRF token management
+  // Completely reworked file upload function using XMLHttpRequest instead of fetch
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('profile_picture', file);
-
     setUploading(true);
     try {
-      // Get the CSRF token right before making the request
+      // First, explicitly request a new CSRF token
+      await fetch('http://localhost:8000/api/csrf/', {
+        credentials: 'include',
+        cache: 'no-store', // Prevent caching
+      });
+
+      // Get the freshly issued CSRF token
       const csrfToken = getCSRFToken();
-      console.log('Using CSRF Token for file upload:', csrfToken);
+      console.log('Fresh CSRF Token for file upload:', csrfToken);
       
-      // Make sure we have a valid CSRF token before proceeding
       if (!csrfToken) {
         throw new Error('No CSRF token available. Try refreshing the page.');
       }
       
-      // Make the request with proper CSRF token
-      const response = await fetch('http://localhost:8000/home/profile/picture/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': csrfToken,
-        },
-        body: formData,
-        credentials: 'include'
+      // Create a FormData object
+      const formData = new FormData();
+      formData.append('profile_picture', file);
+      // Also include the CSRF token in the form data
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      
+      // Use XMLHttpRequest instead of fetch for file uploads
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.open('POST', 'http://localhost:8000/home/profile/picture/', true);
+        xhr.withCredentials = true; // Include cookies
+        
+        // Set the CSRF token in the header
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              setUserData(prev => ({ ...prev, profile_picture: data.profile_picture }));
+              alert('Profile picture uploaded successfully!');
+              resolve(data);
+            } catch (e) {
+              reject(new Error('Invalid response format'));
+            }
+          } else {
+            console.error('Server response:', xhr.responseText);
+            reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+          }
+        };
+        
+        xhr.onerror = function() {
+          reject(new Error('Network error during upload'));
+        };
+        
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            console.log(`Upload progress: ${percentComplete}%`);
+          }
+        };
+        
+        xhr.send(formData);
       });
-
-      // Better error handling
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Server response:', errorData);
-        throw new Error(`Failed to upload profile picture: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setUserData(prev => ({ ...prev, profile_picture: data.profile_picture }));
-      alert('Profile picture uploaded successfully!');
     } catch (err) {
       alert(err.message);
       console.error('Error uploading profile picture:', err);
