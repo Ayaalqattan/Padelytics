@@ -163,3 +163,49 @@ def update_profile(request):
 
     except Exception as e:
         return Response({"message": f"حدث خطأ أثناء التحديث: {str(e)}"}, status=400)
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['POST'])
+def add_friend(request):
+    uid = request.session.get('uid')
+    if not uid:
+        return Response({"message": "غير مسجل الدخول"}, status=401)
+
+    friend_username = request.data.get('username')  # نستقبل username بدل friend_uid
+    if not friend_username:
+        return Response({"message": "لم يتم تحديد اسم المستخدم المراد إضافته"}, status=400)
+
+    try:
+        user_ref = db.collection('users').document(uid)
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            return Response({"message": "المستخدم غير موجود"}, status=404)
+
+        # البحث عن المستخدم بواسطة username
+        friend_query = db.collection('users').where('username', '==', friend_username).stream()
+        friend_docs = list(friend_query)
+
+        if not friend_docs:
+            return Response({"message": "المستخدم المراد إضافته غير موجود"}, status=404)
+
+        friend_doc = friend_docs[0]
+        friend_uid = friend_doc.id
+
+        if uid == friend_uid:
+            return Response({"message": "لا يمكنك إضافة نفسك كصديق"}, status=400)
+
+        user_data = user_doc.to_dict()
+        current_friends = user_data.get('friends', [])
+
+        if friend_uid in current_friends:
+            return Response({"message": "هذا المستخدم مضاف بالفعل كصديق"}, status=400)
+
+        current_friends.append(friend_uid)
+        user_ref.update({'friends': current_friends})
+
+        return Response({"message": "تمت إضافة الصديق بنجاح"}, status=200)
+
+    except Exception as e:
+        print("Error adding friend:", e)
+        return Response({"message": "حدث خطأ أثناء الإضافة. حاول مرة أخرى لاحقًا."}, status=400)
