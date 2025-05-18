@@ -28,7 +28,6 @@ const teamMembers = [
     name: "Mona Ahmed",
     role: "Web Team",
     image: mona,
- Zodiac: "Taurus",
     social: {
       facebook: "https://www.facebook.com/mona.alqattan.35",
       linkedin: "www.linkedin.com/in/mona-el-qattan-ab751a2b9",
