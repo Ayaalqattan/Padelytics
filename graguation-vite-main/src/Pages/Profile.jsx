@@ -568,21 +568,452 @@
 
 
 
+// import React, { useEffect, useState } from 'react';
+// import './Profile.css';
+
+// // دالة مساعدة لجلب CSRF Token من الكوكيز
+// function getCSRFToken() {
+//   const cookieValue = document.cookie
+//     .split('; ')
+//     .find(row => row.startsWith('csrftoken='));
+//   return cookieValue ? cookieValue.split('=')[1] : null;
+// }
+
+// function Profile() {
+//   const [userData, setUserData] = useState(null);
+//   const [friends, setFriends] = useState([]);
+//   const [friendUsername, setFriendUsername] = useState(''); // Changed from friendEmail to friendUsername
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [friendError, setFriendError] = useState(null);
+//   const [friendSuccess, setFriendSuccess] = useState(null);
+//   const [isEditing, setIsEditing] = useState(false);
+//   const [uploading, setUploading] = useState(false);
+  
+//   // State for form data
+//   const [formData, setFormData] = useState({
+//     username: '',
+//     level: 'beginner'
+//   });
+//   const [updateSuccess, setUpdateSuccess] = useState(null);
+//   const [updateError, setUpdateError] = useState(null);
+
+//   useEffect(() => {
+//     // أولاً: جلب CSRF token من السيرفر (عشان السيرفر يرسل كوكيز csrftoken)
+//     fetch('http://localhost:8000/api/csrf/', {
+//       credentials: 'include',
+//     }).then(() => {
+//       // طباعة قيمة CSRF Token من الكوكيز
+//       console.log('CSRF Token from cookies:', getCSRFToken());
+
+//       // بعد ما جلبنا الـ CSRF، نجيب بيانات المستخدم
+//       fetch('http://localhost:8000/home/profile/', {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         credentials: 'include'
+//       })
+//         .then(response => {
+//           if (!response.ok) {
+//             throw new Error(`Server error: ${response.status}`);
+//           }
+//           return response.json();
+//         })
+//         .then(data => {
+//           setUserData(data);
+//           setFriends(data.friends || []);
+//           // Initialize form data with current user data
+//           setFormData({
+//             username: data.username || data.name || '',
+//             level: data.level || 'beginner'
+//           });
+//         })
+//         .catch(err => {
+//           setError(err.message);
+//           console.error('Error fetching user data:', err);
+//         })
+//         .finally(() => {
+//           setLoading(false);
+//         });
+//     }).catch(err => {
+//       console.error('Error fetching CSRF token:', err);
+//       setLoading(false);
+//       setError('Failed to get CSRF token');
+//     });
+//   }, []);
+
+//   // دالة رفع الصورة مع CSRF token في الهيدر
+//   const handleFileChange = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     const formData = new FormData();
+//     formData.append('profile_picture', file);
+
+//     setUploading(true);
+//     try {
+//       const response = await fetch('http://localhost:8000/home/profile/picture/', {
+//         method: 'POST',
+//         headers: {
+//           'X-CSRFToken': getCSRFToken(),  // هيدر CSRFToken هنا
+//         },
+//         body: formData,
+//         credentials: 'include'
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to upload profile picture');
+//       }
+
+//       const data = await response.json();
+//       setUserData(prev => ({ ...prev, profile_picture: data.profile_picture }));
+//     } catch (err) {
+//       alert(err.message);
+//       console.error(err);
+//     } finally {
+//       setUploading(false);
+//     }
+//   };
+
+//   // Function to handle input changes
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData({
+//       ...formData,
+//       [name]: value
+//     });
+//   };
+
+//   // Function to handle profile update
+//   const handleUpdateProfile = async (e) => {
+//     e.preventDefault();
+//     setUpdateError(null);
+//     setUpdateSuccess(null);
+
+//     try {
+//       const response = await fetch('http://localhost:8000/home/profile/update/', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'X-CSRFToken': getCSRFToken(),
+//         },
+//         body: JSON.stringify(formData),
+//         credentials: 'include'
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to update profile');
+//       }
+
+//       const data = await response.json();
+//       setUserData(prev => ({ ...prev, ...data }));
+//       setUpdateSuccess('Profile updated successfully!');
+      
+//       // Exit edit mode after successful update
+//       setTimeout(() => {
+//         setIsEditing(false);
+//         setUpdateSuccess(null);
+//       }, 2000);
+//     } catch (err) {
+//       setUpdateError(err.message);
+//       console.error('Error updating profile:', err);
+//     }
+//   };
+
+//   const handleAddFriend = async (e) => {
+//     e.preventDefault();
+//     setFriendError(null);
+//     setFriendSuccess(null);
+
+//     try {
+//       const response = await fetch('http://localhost:8000/api/add-friend/', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'X-CSRFToken': getCSRFToken(),
+//         },
+//         body: JSON.stringify({ username: friendUsername }), // Changed from email to username
+//         credentials: 'include'
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to add friend');
+//       }
+
+//       const data = await response.json();
+//       setFriends([...friends, data.friend]);
+//       setFriendSuccess('Friend added successfully!');
+//       setFriendUsername(''); // Changed from friendEmail
+//     } catch (err) {
+//       setFriendError(err.message);
+//       console.error('Error adding friend:', err);
+//     }
+//   };
+
+//   const handleLogout = async () => {
+//     try {
+//       await fetch('http://localhost:8000/logout/', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'X-CSRFToken': getCSRFToken(),
+//         },
+//         credentials: 'include',
+//       });
+//     } catch (err) {
+//       console.error('Logout failed:', err);
+//     } finally {
+//       localStorage.removeItem('token');
+//       window.location.href = '/';
+//     }
+//   };
+
+//   const toggleEditMode = () => {
+//     if (isEditing) {
+//       // Reset form data when canceling edit
+//       setFormData({
+//         username: userData.username || userData.name || '',
+//         level: userData.level || 'beginner'
+//       });
+//     }
+//     setIsEditing(!isEditing);
+//     setUpdateError(null);
+//     setUpdateSuccess(null);
+//   };
+
+//   const getLevelProgress = (level) => {
+//     switch (level?.toLowerCase()) {
+//       case 'beginner': return 25;
+//       case 'intermediate': return 50;
+//       case 'advanced': return 75;
+//       case 'pro':
+//       case 'professional': return 95;
+//       default: return 25;
+//     }
+//   };
+
+//   const getLevelClass = (level) => {
+//     switch (level?.toLowerCase()) {
+//       case 'beginner': return 'level-beginner';
+//       case 'intermediate': return 'level-intermediate';
+//       case 'advanced': return 'level-advanced';
+//       case 'pro':
+//       case 'professional': return 'level-pro';
+//       default: return 'level-beginner';
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="loading-container">
+//         <div className="loading-spinner"></div>
+//       </div>
+//     );
+//   }
+
+//   if (error || !userData) {
+//     return (
+//       <div className="error-container">
+//         <h3 className="error-title">Error loading profile</h3>
+//         <p className="error-message">{error || 'Please sign in to view your profile.'}</p>
+//         <button onClick={() => window.location.reload()} className="btn btn-primary">
+//           Retry
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   const winRate = userData.stats?.matches > 0
+//     ? Math.round((userData.stats.wins / userData.stats.matches) * 100)
+//     : 0;
+
+//   return (
+//     <div className="profile-container">
+//       <div className="container mx-auto px-4">
+//         <div className="profile-header">
+//           <h1 className="profile-title">Player Profile</h1>
+//           <div className="btn-group">
+//             <button onClick={toggleEditMode} className="btn btn-primary">
+//               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+//                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+//               </svg>
+//               {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+//             </button>
+//             <button onClick={handleLogout} className="btn btn-danger">
+//               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+//                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414a1 1 0 00-.293-.707L11.414 2.414A1 1 0 0010.707 2H4a1 1 0 00-1 1zm9 2.414L15.586 7H12V5.414zM10 9a1 1 0 00-1 1v3a1 1 0 002 0v-3a1 1 0 00-1-1z" clipRule="evenodd" />
+//                 <path d="M3 8a1 1 0 011-1h4a1 1 0 010 2H4a1 1 0 01-1-1z" />
+//               </svg>
+//               Logout
+//             </button>
+//           </div>
+//         </div>
+
+//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+//           <div className="md:col-span-1">
+//             <div className="profile-card">
+//               <div className="profile-banner">
+//                 <div className="profile-picture-container">
+//                   <img
+//                     src={userData.profile_picture || 'https://via.placeholder.com/150'}
+//                     alt="Profile"
+//                     className="profile-picture"
+//                   />
+//                   {/* Show file input normally or in edit mode */}
+//                   <input
+//                     type="file"
+//                     accept="image/*"
+//                     onChange={handleFileChange}
+//                     disabled={uploading}
+//                     style={{ marginTop: '10px' }}
+//                   />
+//                   {uploading && <p>Uploading...</p>}
+//                 </div>
+//               </div>
+
+//               <div className="profile-info">
+//                 {isEditing ? (
+//                   <div className="edit-form">
+//                     <form onSubmit={handleUpdateProfile}>
+//                       <div className="form-group">
+//                         <label htmlFor="username">Username</label>
+//                         <input
+//                           type="text"
+//                           id="username"
+//                           name="username"
+//                           value={formData.username}
+//                           onChange={handleInputChange}
+//                           className="form-control"
+//                           required
+//                         />
+//                       </div>
+
+//                       <div className="form-group">
+//                         <label htmlFor="level">Level</label>
+//                         <select
+//                           id="level"
+//                           name="level"
+//                           value={formData.level}
+//                           onChange={handleInputChange}
+//                           className="form-control"
+//                           required
+//                         >
+//                           <option value="beginner">Beginner</option>
+//                           <option value="intermediate">Intermediate</option>
+//                           <option value="advanced">Advanced</option>
+//                           <option value="pro">Professional</option>
+//                         </select>
+//                       </div>
+
+//                       {updateError && <p className="error-message">{updateError}</p>}
+//                       {updateSuccess && <p className="success-message">{updateSuccess}</p>}
+
+//                       <button type="submit" className="btn btn-success mt-3">
+//                         Save Changes
+//                       </button>
+//                     </form>
+//                   </div>
+//                 ) : (
+//                   <>
+//                     <h2 className="profile-name">{userData.username || userData.name}</h2>
+//                     <p className="profile-email">{userData.email}</p>
+
+//                     <div className="mt-2">
+//                       <span className={`level-badge ${getLevelClass(userData.level)}`}>
+//                         {userData.level?.charAt(0).toUpperCase() + userData.level?.slice(1) || 'Beginner'}
+//                       </span>
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="md:col-span-2 space-y-6">
+//             <div className="section-card">
+//               <h3 className="section-title">Performance Stats</h3>
+//               <div className="stats-grid">
+//                 <div className="stat-card stat-matches">
+//                   <div className="stat-number">{userData.stats?.matches || 0}</div>
+//                   <div className="stat-label">Matches</div>
+//                 </div>
+//                 <div className="stat-card stat-wins">
+//                   <div className="stat-number">{userData.stats?.wins || 0}</div>
+//                   <div className="stat-label">Wins</div>
+//                 </div>
+//                 <div className="stat-card stat-losses">
+//                   <div className="stat-number">{userData.stats?.losses || 0}</div>
+//                   <div className="stat-label">Losses</div>
+//                 </div>
+//                 <div className="stat-card stat-winrate">
+//                   <div className="stat-number">{winRate}%</div>
+//                   <div className="stat-label">Win Rate</div>
+//                 </div>
+//               </div>
+
+//               <div className="progress-bar-container">
+//                 <div className="progress-bar" style={{ width: `${getLevelProgress(userData.level)}%` }}></div>
+//               </div>
+//             </div>
+
+//             <div className="section-card">
+//               <h3 className="section-title">Friends</h3>
+
+//               <form onSubmit={handleAddFriend} className="add-friend-form">
+//                 <input
+//                   type="text" // Changed from email to text
+//                   value={friendUsername} // Changed from friendEmail
+//                   onChange={(e) => setFriendUsername(e.target.value)} // Changed from friendEmail
+//                   placeholder="Enter friend's username" // Updated placeholder
+//                   required
+//                 />
+//                 <button type="submit" className="btn btn-primary">Add Friend</button>
+//               </form>
+
+//               {friendError && <p className="error-message">{friendError}</p>}
+//               {friendSuccess && <p className="success-message">{friendSuccess}</p>}
+
+//               <ul className="friends-list">
+//                 {friends.map(friend => (
+//                   <li key={friend.id} className="friend-item">
+//                     <span>{friend.username} ({friend.email})</span>
+//                   </li>
+//                 ))}
+//               </ul>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Profile;
+
 import React, { useEffect, useState } from 'react';
 import './Profile.css';
 
-// دالة مساعدة لجلب CSRF Token من الكوكيز
+// Enhanced function to retrieve CSRF Token from cookies
 function getCSRFToken() {
   const cookieValue = document.cookie
     .split('; ')
     .find(row => row.startsWith('csrftoken='));
-  return cookieValue ? cookieValue.split('=')[1] : null;
+  
+  if (!cookieValue) {
+    console.error('CSRF token not found in cookies');
+    return null;
+  }
+  
+  const token = cookieValue.split('=')[1];
+  console.log('Found CSRF token:', token);
+  return token;
 }
 
 function Profile() {
   const [userData, setUserData] = useState(null);
   const [friends, setFriends] = useState([]);
-  const [friendUsername, setFriendUsername] = useState(''); // Changed from friendEmail to friendUsername
+  const [friendUsername, setFriendUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [friendError, setFriendError] = useState(null);
@@ -599,14 +1030,14 @@ function Profile() {
   const [updateError, setUpdateError] = useState(null);
 
   useEffect(() => {
-    // أولاً: جلب CSRF token من السيرفر (عشان السيرفر يرسل كوكيز csrftoken)
+    // First: Fetch CSRF token from server (so the server sends csrftoken cookie)
     fetch('http://localhost:8000/api/csrf/', {
       credentials: 'include',
     }).then(() => {
-      // طباعة قيمة CSRF Token من الكوكيز
-      console.log('CSRF Token from cookies:', getCSRFToken());
+      // Log CSRF Token from cookies for debugging
+      console.log('CSRF Token from cookies after /api/csrf/ call:', getCSRFToken());
 
-      // بعد ما جلبنا الـ CSRF، نجيب بيانات المستخدم
+      // After getting CSRF, fetch user data
       fetch('http://localhost:8000/home/profile/', {
         method: 'GET',
         headers: {
@@ -643,7 +1074,7 @@ function Profile() {
     });
   }, []);
 
-  // دالة رفع الصورة مع CSRF token في الهيدر
+  // Enhanced file upload function with better error handling and CSRF token management
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -653,24 +1084,38 @@ function Profile() {
 
     setUploading(true);
     try {
+      // Get the CSRF token right before making the request
+      const csrfToken = getCSRFToken();
+      console.log('Using CSRF Token for file upload:', csrfToken);
+      
+      // Make sure we have a valid CSRF token before proceeding
+      if (!csrfToken) {
+        throw new Error('No CSRF token available. Try refreshing the page.');
+      }
+      
+      // Make the request with proper CSRF token
       const response = await fetch('http://localhost:8000/home/profile/picture/', {
         method: 'POST',
         headers: {
-          'X-CSRFToken': getCSRFToken(),  // هيدر CSRFToken هنا
+          'X-CSRFToken': csrfToken,
         },
         body: formData,
         credentials: 'include'
       });
 
+      // Better error handling
       if (!response.ok) {
-        throw new Error('Failed to upload profile picture');
+        const errorData = await response.text();
+        console.error('Server response:', errorData);
+        throw new Error(`Failed to upload profile picture: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       setUserData(prev => ({ ...prev, profile_picture: data.profile_picture }));
+      alert('Profile picture uploaded successfully!');
     } catch (err) {
       alert(err.message);
-      console.error(err);
+      console.error('Error uploading profile picture:', err);
     } finally {
       setUploading(false);
     }
@@ -685,25 +1130,34 @@ function Profile() {
     });
   };
 
-  // Function to handle profile update
+  // Enhanced profile update function with better CSRF handling
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setUpdateError(null);
     setUpdateSuccess(null);
 
     try {
+      const csrfToken = getCSRFToken();
+      console.log('Using CSRF Token for profile update:', csrfToken);
+      
+      if (!csrfToken) {
+        throw new Error('No CSRF token available. Try refreshing the page.');
+      }
+      
       const response = await fetch('http://localhost:8000/home/profile/update/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken(),
+          'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify(formData),
         credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        const errorData = await response.text();
+        console.error('Server response:', errorData);
+        throw new Error(`Failed to update profile: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -721,46 +1175,68 @@ function Profile() {
     }
   };
 
+  // Enhanced add friend function with better CSRF handling
   const handleAddFriend = async (e) => {
     e.preventDefault();
     setFriendError(null);
     setFriendSuccess(null);
 
     try {
+      const csrfToken = getCSRFToken();
+      console.log('Using CSRF Token for add friend:', csrfToken);
+      
+      if (!csrfToken) {
+        throw new Error('No CSRF token available. Try refreshing the page.');
+      }
+      
       const response = await fetch('http://localhost:8000/api/add-friend/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken(),
+          'X-CSRFToken': csrfToken,
         },
-        body: JSON.stringify({ username: friendUsername }), // Changed from email to username
+        body: JSON.stringify({ username: friendUsername }),
         credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add friend');
+        const errorData = await response.text();
+        console.error('Server response:', errorData);
+        throw new Error(`Failed to add friend: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       setFriends([...friends, data.friend]);
       setFriendSuccess('Friend added successfully!');
-      setFriendUsername(''); // Changed from friendEmail
+      setFriendUsername('');
     } catch (err) {
       setFriendError(err.message);
       console.error('Error adding friend:', err);
     }
   };
 
+  // Enhanced logout function with better CSRF handling
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/logout/', {
+      const csrfToken = getCSRFToken();
+      console.log('Using CSRF Token for logout:', csrfToken);
+      
+      if (!csrfToken) {
+        throw new Error('No CSRF token available. Try refreshing the page.');
+      }
+      
+      const response = await fetch('http://localhost:8000/logout/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken(),
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
       });
+      
+      if (!response.ok) {
+        console.error('Logout failed with status:', response.status);
+      }
     } catch (err) {
       console.error('Logout failed:', err);
     } finally {
@@ -860,15 +1336,19 @@ function Profile() {
                     alt="Profile"
                     className="profile-picture"
                   />
-                  {/* Show file input normally or in edit mode */}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={uploading}
-                    style={{ marginTop: '10px' }}
-                  />
-                  {uploading && <p>Uploading...</p>}
+                  <label className="file-upload-label">
+                    <span className="btn btn-sm btn-secondary">
+                      {uploading ? 'Uploading...' : 'Change Picture'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={uploading}
+                      className="file-input"
+                    />
+                  </label>
+                  {uploading && <div className="upload-progress-indicator">Uploading...</div>}
                 </div>
               </div>
 
@@ -962,10 +1442,10 @@ function Profile() {
 
               <form onSubmit={handleAddFriend} className="add-friend-form">
                 <input
-                  type="text" // Changed from email to text
-                  value={friendUsername} // Changed from friendEmail
-                  onChange={(e) => setFriendUsername(e.target.value)} // Changed from friendEmail
-                  placeholder="Enter friend's username" // Updated placeholder
+                  type="text"
+                  value={friendUsername}
+                  onChange={(e) => setFriendUsername(e.target.value)}
+                  placeholder="Enter friend's username"
                   required
                 />
                 <button type="submit" className="btn btn-primary">Add Friend</button>
@@ -975,11 +1455,15 @@ function Profile() {
               {friendSuccess && <p className="success-message">{friendSuccess}</p>}
 
               <ul className="friends-list">
-                {friends.map(friend => (
-                  <li key={friend.id} className="friend-item">
-                    <span>{friend.username} ({friend.email})</span>
-                  </li>
-                ))}
+                {friends.length === 0 ? (
+                  <li className="no-friends-message">No friends added yet</li>
+                ) : (
+                  friends.map(friend => (
+                    <li key={friend.id || friend.username} className="friend-item">
+                      <span>{friend.username} {friend.email ? `(${friend.email})` : ''}</span>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
           </div>
