@@ -515,7 +515,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import './Profile.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Use a hardcoded API base URL. To use environment variables, create a .env file with
+// REACT_APP_API_URL="your-api-url" and ensure your build tool (e.g., Create React App, Vite)
+// injects process.env.REACT_APP_API_URL into the browser environment.
+const API_BASE_URL = 'http://localhost:8000';
 
 // Function to retrieve CSRF token from cookies or DOM
 function getCSRFToken() {
