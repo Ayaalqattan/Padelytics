@@ -10,3 +10,5 @@ graduate/padelytics-a587d-firebase-adminsdk-fbsvc-52d874cb74.json
 
 graduate/padelytics-a587d-firebase-adminsdk-fbsvc-52d874cb74.json
 db.sqlite3
+__pycache__/
+*.pyc
