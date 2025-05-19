@@ -1527,23 +1527,6 @@ function getCSRFToken() {
   return null;
 }
 
-// Function to fetch CSRF token
-async function fetchCsrfToken() {
-  try {
-    const response = await fetch('http://localhost:8000/api/csrf/', {
-      credentials: 'include',
-      cache: 'no-store',
-    });
-    if (!response.ok) throw new Error('Failed to fetch CSRF token');
-    const token = getCSRFToken();
-    if (!token) throw new Error('CSRF token not found after fetch');
-    return token;
-  } catch (err) {
-    console.error('Error fetching CSRF token:', err);
-    throw err;
-  }
-}
-
 // Basic input sanitization to prevent XSS
 const sanitizeInput = (input) => input.replace(/[<>{}]/g, '');
 
@@ -1561,15 +1544,21 @@ function Profile() {
 
   // Fetch CSRF token once
   useEffect(() => {
-    const initCsrfToken = async () => {
+    const fetchCsrfToken = async () => {
       try {
-        const token = await fetchCsrfToken();
-        setCsrfToken(token);
+        await fetch('http://localhost:8000/api/csrf/', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const token = getCSRFToken();
+        if (token) setCsrfToken(token);
+        else throw new Error('No CSRF token available');
       } catch (err) {
         setErrors((prev) => ({ ...prev, csrf: err.message }));
+        console.error('Failed to fetch CSRF token:', err);
       }
     };
-    initCsrfToken();
+    fetchCsrfToken();
   }, []);
 
   // Fetch user data
@@ -1607,7 +1596,7 @@ function Profile() {
     return () => controller.abort();
   }, [csrfToken]);
 
-  // Handle file upload with CSRF refresh on 403
+  // Handle file upload
   const handleFileChange = useCallback(
     async (e) => {
       const file = e.target.files[0];
@@ -1623,54 +1612,23 @@ function Profile() {
 
       setUploading(true);
       try {
-        let token = csrfToken;
-        if (!token) {
-          console.log('No CSRF token, fetching new one...');
-          token = await fetchCsrfToken();
-          setCsrfToken(token);
-        }
-
         const formData = new FormData();
         formData.append('profile_picture', file);
-        formData.append('csrfmiddlewaretoken', token);
-
-        console.log('Uploading with CSRF token:', token);
+        formData.append('csrfmiddlewaretoken', csrfToken);
 
         const response = await fetch('http://localhost:8000/home/profile/picture/', {
           method: 'POST',
-          headers: { 'X-CSRFToken': token },
+          headers: { 'X-CSRFToken': csrfToken },
           body: formData,
           credentials: 'include',
         });
 
         if (!response.ok) {
-          if (response.status === 403) {
-            // Retry with fresh CSRF token
-            console.log('403 received, retrying with new CSRF token...');
-            token = await fetchCsrfToken();
-            setCsrfToken(token);
-            formData.set('csrfmiddlewaretoken', token);
-            const retryResponse = await fetch('http://localhost:8000/home/profile/picture/', {
-              method: 'POST',
-              headers: { 'X-CSRFToken': token },
-              body: formData,
-              credentials: 'include',
-            });
-            if (!retryResponse.ok) {
-              const errorData = await retryResponse.json();
-              throw new Error(`Upload failed: ${retryResponse.status} ${JSON.stringify(errorData)}`);
-            }
-            const retryData = await retryResponse.json();
-            setUserData((prev) => ({ ...prev, profile_picture: retryData.profile_picture }));
-          } else {
-            const errorData = await response.json();
-            throw new Error(`Upload failed: ${response.status} ${JSON.stringify(errorData)}`);
-          }
-        } else {
-          const data = await response.json();
-          setUserData((prev) => ({ ...prev, profile_picture: data.profile_picture }));
+          const errorData = await response.text();
+          throw new Error(`Upload failed: ${response.status} ${errorData}`);
         }
-
+        const data = await response.json();
+        setUserData((prev) => ({ ...prev, profile_picture: data.profile_picture }));
         setSuccess((prev) => ({ ...prev, upload: 'Profile picture uploaded successfully!' }));
         setTimeout(() => setSuccess((prev) => ({ ...prev, upload: null })), 2000);
       } catch (err) {
