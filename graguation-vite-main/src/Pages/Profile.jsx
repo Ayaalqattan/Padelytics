@@ -1508,35 +1508,32 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import './Profile.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 // Function to retrieve CSRF token from cookies or DOM
 function getCSRFToken() {
   const cookieValue = document.cookie
     .split('; ')
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1];
-  if (cookieValue) {
-    console.log('Found CSRF token in cookies:', cookieValue);
-    return cookieValue;
-  }
+  if (cookieValue) return cookieValue;
   const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
-  if (csrfInput) {
-    console.log('Found CSRF token in DOM:', csrfInput);
-    return csrfInput;
-  }
-  console.error('CSRF token not found in cookies or DOM');
+  if (csrfInput) return csrfInput;
+  console.error('CSRF token not found');
   return null;
 }
 
 // Function to fetch CSRF token
 async function fetchCsrfToken() {
   try {
-    const response = await fetch('http://localhost:8000/api/csrf/', {
+    const response = await fetch(`${API_BASE_URL}/api/csrf/`, {
       credentials: 'include',
       cache: 'no-store',
     });
     if (!response.ok) throw new Error('Failed to fetch CSRF token');
-    const token = getCSRFToken();
-    if (!token) throw new Error('CSRF token not found after fetch');
+    const data = await response.json();
+    const token = data.csrfToken || getCSRFToken();
+    if (!token) throw new Error('CSRF token not found');
     return token;
   } catch (err) {
     console.error('Error fetching CSRF token:', err);
@@ -1559,6 +1556,12 @@ function Profile() {
   const [formData, setFormData] = useState({ username: '', level: 'beginner' });
   const [csrfToken, setCsrfToken] = useState(null);
 
+  // Clear errors after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setErrors({}), 3000);
+    return () => clearTimeout(timer);
+  }, [errors]);
+
   // Fetch CSRF token once
   useEffect(() => {
     const initCsrfToken = async () => {
@@ -1578,10 +1581,9 @@ function Profile() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:8000/home/profile/', {
+        const response = await fetch(`${API_BASE_URL}/home/profile/`, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken,
           },
           credentials: 'include',
@@ -1598,7 +1600,6 @@ function Profile() {
       } catch (err) {
         if (err.name === 'AbortError') return;
         setErrors((prev) => ({ ...prev, profile: err.message }));
-        console.error('Error fetching user data:', err);
       } finally {
         setLoading(false);
       }
@@ -1607,17 +1608,17 @@ function Profile() {
     return () => controller.abort();
   }, [csrfToken]);
 
-  // Handle file upload with CSRF refresh on 403
+  // Handle file upload
   const handleFileChange = useCallback(
     async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-        setErrors((prev) => ({ ...prev, upload: 'Only JPEG, PNG, or GIF images are allowed' }));
+        setErrors((prev) => ({ ...prev, upload: 'Only JPEG, PNG, or GIF allowed' }));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, upload: 'File size must be less than 5MB' }));
+        setErrors((prev) => ({ ...prev, upload: 'File size must be < 5MB' }));
         return;
       }
 
@@ -1625,7 +1626,6 @@ function Profile() {
       try {
         let token = csrfToken;
         if (!token) {
-          console.log('No CSRF token, fetching new one...');
           token = await fetchCsrfToken();
           setCsrfToken(token);
         }
@@ -1634,9 +1634,7 @@ function Profile() {
         formData.append('profile_picture', file);
         formData.append('csrfmiddlewaretoken', token);
 
-        console.log('Uploading with CSRF token:', token);
-
-        const response = await fetch('http://localhost:8000/home/profile/picture/', {
+        const response = await fetch(`${API_BASE_URL}/home/profile/picture/`, {
           method: 'POST',
           headers: { 'X-CSRFToken': token },
           body: formData,
@@ -1645,37 +1643,30 @@ function Profile() {
 
         if (!response.ok) {
           if (response.status === 403) {
-            // Retry with fresh CSRF token
-            console.log('403 received, retrying with new CSRF token...');
             token = await fetchCsrfToken();
             setCsrfToken(token);
             formData.set('csrfmiddlewaretoken', token);
-            const retryResponse = await fetch('http://localhost:8000/home/profile/picture/', {
+            const retryResponse = await fetch(`${API_BASE_URL}/home/profile/picture/`, {
               method: 'POST',
               headers: { 'X-CSRFToken': token },
               body: formData,
               credentials: 'include',
             });
-            if (!retryResponse.ok) {
-              const errorData = await retryResponse.json();
-              throw new Error(`Upload failed: ${retryResponse.status} ${JSON.stringify(errorData)}`);
-            }
+            if (!retryResponse.ok) throw new Error('Upload failed after retry');
             const retryData = await retryResponse.json();
             setUserData((prev) => ({ ...prev, profile_picture: retryData.profile_picture }));
           } else {
-            const errorData = await response.json();
-            throw new Error(`Upload failed: ${response.status} ${JSON.stringify(errorData)}`);
+            throw new Error(`Upload failed: ${response.status}`);
           }
         } else {
           const data = await response.json();
           setUserData((prev) => ({ ...prev, profile_picture: data.profile_picture }));
         }
 
-        setSuccess((prev) => ({ ...prev, upload: 'Profile picture uploaded successfully!' }));
+        setSuccess((prev) => ({ ...prev, upload: 'Profile picture uploaded!' }));
         setTimeout(() => setSuccess((prev) => ({ ...prev, upload: null })), 2000);
       } catch (err) {
         setErrors((prev) => ({ ...prev, upload: err.message }));
-        console.error('Error uploading profile picture:', err);
       } finally {
         setUploading(false);
       }
@@ -1696,13 +1687,13 @@ function Profile() {
   const handleUpdateProfile = useCallback(
     async (e) => {
       e.preventDefault();
-      setErrors((prev) => ({ ...prev, update: null }));
-      setSuccess((prev) => ({ ...prev, update: null }));
+      if (!csrfToken) {
+        setErrors((prev) => ({ ...prev, update: 'No CSRF token available' }));
+        return;
+      }
 
       try {
-        if (!csrfToken) throw new Error('No CSRF token available');
-
-        const response = await fetch('http://localhost:8000/home/profile/update/', {
+        const response = await fetch(`${API_BASE_URL}/home/profile/update/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1712,21 +1703,16 @@ function Profile() {
           credentials: 'include',
         });
 
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Failed to update profile: ${response.status} ${errorData}`);
-        }
-
+        if (!response.ok) throw new Error(`Failed to update profile: ${response.status}`);
         const data = await response.json();
         setUserData((prev) => ({ ...prev, ...data }));
-        setSuccess((prev) => ({ ...prev, update: 'Profile updated successfully!' }));
+        setSuccess((prev) => ({ ...prev, update: 'Profile updated!' }));
         setTimeout(() => {
           setIsEditing(false);
           setSuccess((prev) => ({ ...prev, update: null }));
         }, 2000);
       } catch (err) {
         setErrors((prev) => ({ ...prev, update: err.message }));
-        console.error('Error updating profile:', err);
       }
     },
     [csrfToken, formData]
@@ -1736,9 +1722,6 @@ function Profile() {
   const handleAddFriend = useCallback(
     async (e) => {
       e.preventDefault();
-      setErrors((prev) => ({ ...prev, friend: null }));
-      setSuccess((prev) => ({ ...prev, friend: null }));
-
       const sanitizedUsername = sanitizeInput(friendUsername);
       if (!sanitizedUsername) {
         setErrors((prev) => ({ ...prev, friend: 'Invalid username' }));
@@ -1747,8 +1730,7 @@ function Profile() {
 
       try {
         if (!csrfToken) throw new Error('No CSRF token available');
-
-        const response = await fetch('http://localhost:8000/api/add-friend/', {
+        const response = await fetch(`${API_BASE_URL}/api/add-friend/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1759,13 +1741,24 @@ function Profile() {
         });
 
         if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Failed to add friend: ${response.status} ${errorData}`);
+          const errorData = await response.json();
+          throw new Error(`Failed to add friend: ${response.status} ${errorData.message || ''}`);
         }
 
         const data = await response.json();
-        setFriends((prev) => [...prev, data.friend]);
-        setSuccess((prev) => ({ ...prev, friend: 'Friend added successfully!' }));
+        console.log('Add friend response:', data); // Debug log
+        // Ensure friend object has required properties
+        const newFriend = {
+          id: data.friend?.id || Date.now(), // Fallback ID
+          username: data.friend?.username || sanitizedUsername,
+          email: data.friend?.email || '',
+        };
+        setFriends((prev) => {
+          const updatedFriends = [...prev, newFriend];
+          console.log('Updated friends list:', updatedFriends); // Debug log
+          return updatedFriends;
+        });
+        setSuccess((prev) => ({ ...prev, friend: `Added ${sanitizedUsername}!` }));
         setFriendUsername('');
         setTimeout(() => setSuccess((prev) => ({ ...prev, friend: null })), 2000);
       } catch (err) {
@@ -1778,28 +1771,24 @@ function Profile() {
 
   // Logout
   const handleLogout = useCallback(async () => {
-    if (!window.confirm('Are you sure you want to log out?')) return;
-
-    try {
-      if (!csrfToken) throw new Error('No CSRF token available');
-
-      const response = await fetch('http://localhost:8000/logout/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        console.error('Logout failed with status:', response.status);
+    if (window.confirm('Are you sure you want to log out?')) {
+      try {
+        if (csrfToken) {
+          await fetch(`${API_BASE_URL}/logout/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken,
+            },
+            credentials: 'include',
+          });
+        }
+      } catch (err) {
+        console.error('Logout failed:', err);
+      } finally {
+        localStorage.removeItem('token');
+        window.location.href = '/';
       }
-    } catch (err) {
-      console.error('Logout failed:', err);
-    } finally {
-      localStorage.removeItem('token');
-      window.location.href = '/';
     }
   }, [csrfToken]);
 
@@ -1807,52 +1796,34 @@ function Profile() {
   const toggleEditMode = useCallback(() => {
     if (isEditing) {
       setFormData({
-        username: userData.username || userData.name || '',
-        level: userData.level || 'beginner',
+        username: userData?.username || userData?.name || '',
+        level: userData?.level || 'beginner',
       });
     }
     setIsEditing((prev) => !prev);
-    setErrors((prev) => ({ ...prev, update: null }));
-    setSuccess((prev) => ({ ...prev, update: null }));
   }, [userData]);
 
   // Level progress and class
   const getLevelProgress = (level) => {
-    switch (level?.toLowerCase()) {
-      case 'beginner':
-        return 25;
-      case 'intermediate':
-        return 50;
-      case 'advanced':
-        return 75;
-      case 'pro':
-      case 'professional':
-        return 95;
-      default:
-        return 25;
-    }
+    const levels = { beginner: 25, intermediate: 50, advanced: 75, pro: 95, professional: 95 };
+    return levels[level?.toLowerCase()] || 25;
   };
 
   const getLevelClass = (level) => {
-    switch (level?.toLowerCase()) {
-      case 'beginner':
-        return 'level-beginner';
-      case 'intermediate':
-        return 'level-intermediate';
-      case 'advanced':
-        return 'level-advanced';
-      case 'pro':
-      case 'professional':
-        return 'level-pro';
-      default:
-        return 'level-beginner';
-    }
+    const classes = {
+      beginner: 'level-beginner',
+      intermediate: 'level-intermediate',
+      advanced: 'level-advanced',
+      pro: 'level-pro',
+      professional: 'level-pro',
+    };
+    return classes[level?.toLowerCase()] || 'level-beginner';
   };
 
   // Loading state
   if (loading) {
     return (
-      <div className="loading-container">
+      <div className="loading-container" aria-busy="true">
         <div className="loading-spinner"></div>
       </div>
     );
@@ -1863,7 +1834,7 @@ function Profile() {
     return (
       <div className="error-container">
         <h3 className="error-title">Error loading profile</h3>
-        <p className="error-message">{errors.profile || 'Please sign in to view your profile.'}</p>
+        <p className="error-message">{errors.profile || 'Please sign in.'}</p>
         <button onClick={() => window.location.reload()} className="btn btn-primary">
           Retry
         </button>
@@ -1880,23 +1851,25 @@ function Profile() {
         <div className="profile-header">
           <h1 className="profile-title">Player Profile</h1>
           <div className="btn-group">
-            <button onClick={toggleEditMode} className="btn btn-primary">
+            <button onClick={toggleEditMode} className="btn btn-primary" aria-label={isEditing ? 'Cancel Edit' : 'Edit Profile'}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
                 viewBox="0 0 20 20"
                 fill="currentColor"
+                aria-hidden="true"
               >
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
               {isEditing ? 'Cancel Edit' : 'Edit Profile'}
             </button>
-            <button onClick={handleLogout} className="btn btn-danger">
+            <button onClick={handleLogout} className="btn btn-danger" aria-label="Logout">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
                 viewBox="0 0 20 20"
                 fill="currentColor"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -1921,15 +1894,16 @@ function Profile() {
                     className="profile-picture"
                   />
                   <label className="file-upload-label">
-                    <span className="btn btn-sm btn-secondary">
+                    <span className="btn btn-sm btn-secondary" aria-busy={uploading}>
                       {uploading ? 'Uploading...' : 'Change Picture'}
                     </span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/gif"
                       onChange={handleFileChange}
                       disabled={uploading}
                       className="file-input"
+                      aria-label="Upload profile picture"
                     />
                   </label>
                   {uploading && <div className="upload-progress-indicator">Uploading...</div>}
@@ -1952,6 +1926,7 @@ function Profile() {
                           onChange={handleInputChange}
                           className="form-control"
                           required
+                          aria-required="true"
                         />
                       </div>
 
@@ -1964,6 +1939,7 @@ function Profile() {
                           onChange={handleInputChange}
                           className="form-control"
                           required
+                          aria-required="true"
                         >
                           <option value="beginner">Beginner</option>
                           <option value="intermediate">Intermediate</option>
@@ -2021,6 +1997,7 @@ function Profile() {
                 <div
                   className="progress-bar"
                   style={{ width: `${getLevelProgress(userData.level)}%` }}
+                  aria-label={`Level progress: ${getLevelProgress(userData.level)}%`}
                 ></div>
               </div>
             </div>
@@ -2034,6 +2011,8 @@ function Profile() {
                   onChange={(e) => setFriendUsername(sanitizeInput(e.target.value))}
                   placeholder="Enter friend's username"
                   required
+                  aria-required="true"
+                  className="form-control"
                 />
                 <button type="submit" className="btn btn-primary">
                   Add Friend
@@ -2047,10 +2026,14 @@ function Profile() {
                 {friends.length === 0 ? (
                   <li className="no-friends-message">No friends added yet</li>
                 ) : (
-                  friends.map((friend) => (
-                    <li key={friend.id || friend.username} className="friend-item">
+                  friends.map((friend, index) => (
+                    <li
+                      key={friend.id || friend.username || `friend-${index}`}
+                      className="friend-item"
+                    >
                       <span>
-                        {friend.username} {friend.email ? `(${friend.email})` : ''}
+                        {friend.username || 'Unknown User'}{' '}
+                        {friend.email ? `(${friend.email})` : ''}
                       </span>
                     </li>
                   ))
