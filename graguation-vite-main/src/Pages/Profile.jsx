@@ -1748,7 +1748,7 @@ function Profile() {
       try {
         if (!csrfToken) throw new Error('No CSRF token available');
 
-        const response = await fetch('http://localhost:8000/home/api/add_friend/', {
+        const response = await fetch('http://localhost:8000/api/add-friend/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

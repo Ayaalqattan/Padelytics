@@ -130,14 +130,10 @@ def signup(request):
     email    = request.data.get("email")
     password = request.data.get("password")
     level    = request.data.get("level")  # ← إضافة هذا السطر
-    birthday = request.data.get("birthday")
 
-    governorate = request.data.get("governorate")
-    gender = request.data.get("gender")
-    # if not username or not email or not password or not level or not Birthday:
-    #    return Response({"message": "الرجاء إدخال جميع الحقول"}, status=status.HTTP_400_BAD_REQUEST)
+    if not username or not email or not password or not level:
+        return Response({"message": "الرجاء إدخال جميع الحقول"}, status=status.HTTP_400_BAD_REQUEST)
 
-       
     # تحقق من عدم وجود اسم المستخدم مسبقًا
     users_ref = db.collection('users')
     existing_user_query = users_ref.where('username', '==', username).stream()
@@ -153,10 +149,7 @@ def signup(request):
             'email': email,
             'username': username,
             'uid': user.uid,
-            'level': level,  
-            'gender': gender,
-            'birthday' :birthday,
-            'governorate': governorate ,
+            'level': level,  # ← حفظ المستوى هنا
             'wins': 0,
             'losses': 0,
             'matches': 0,
