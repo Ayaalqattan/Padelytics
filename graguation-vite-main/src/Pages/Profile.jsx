@@ -1257,6 +1257,7 @@ function Profile() {
             }
             return updatedFriends;
           });
+          
         }
         
         setSuccess((prev) => ({ ...prev, friend: 'Friend added successfully!' }));
