@@ -1649,7 +1649,7 @@ function Profile() {
         setErrors((prev) => ({ ...prev, friends: 'Failed to load friends' }));
         
         // Fallback to the original method if axios fails
-        fetch('http://localhost:8000/home/api/friends/', {
+        fetch('http://localhost:8000/home/api/get_friends/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1784,7 +1784,7 @@ function Profile() {
         if (!csrfToken) throw new Error('No CSRF token available');
 
         // Using axios for adding friends
-        const response = await axios.post('/api/add_friend/', 
+        const response = await axios.post('home/api/add_friend/', 
           { username: sanitizedUsername },
           { 
             headers: {
