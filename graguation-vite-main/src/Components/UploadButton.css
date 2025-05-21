@@ -1,4 +1,14 @@
+.upload-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+}
+
 .upload-btn {
+  margin-top: 180px;
+  margin-bottom: 90px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import "./UploadSection.css"
+import "./UploadSection.css";
 import VideoUpload from './VideoUpload';
 import PlayerManagement from './PlayerManagement';
 import CourtSelection from './CourtSelection';
+import SectionOne from '../components/SectionOne';
 
 function UploadSection() {
   const [videoFile, setVideoFile] = useState(null);
@@ -65,53 +66,56 @@ function UploadSection() {
   };
 
   return (
-    <div className="app-container">
-      <div className="form-container">
-        <form id="analysis-form" onSubmit={handleSubmit}>
-          {/* Video Upload Section */}
-          <div className="form-section">
-            <h2>Video Upload</h2>
-            <VideoUpload 
-              videoFile={videoFile} 
-              setVideoFile={setVideoFile} 
-            />
-          </div>
-          
-          {/* Players Section */}
-          <div className="form-section">
-            <h2>Players</h2>
-            <PlayerManagement 
-              players={players} 
-              setPlayers={setPlayers} 
-            />
-          </div>
-          
-          {/* Court Selection Section */}
-          <div className="form-section">
-            <h2>Court Selection</h2>
-            <CourtSelection 
-              selectedCourt={selectedCourt} 
-              setSelectedCourt={setSelectedCourt} 
-            />
-          </div>
-          
-          {/* Analysis Button */}
-          <button 
-            type="submit" 
-            className="submit-button"
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? 'Analyzing...' : 'Analyze Video'}
-          </button>
-          
-          {/* Loading Indicator */}
-          {isAnalyzing && (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Analyzing video... This may take a few minutes.</p>
+    <div className="upload-section">
+      <SectionOne />
+      <div className="app-container">
+        <div className="form-container">
+          <form id="analysis-form" onSubmit={handleSubmit}>
+            {/* Video Upload Section */}
+            <div className="form-section">
+              <h2>Video Upload</h2>
+              <VideoUpload 
+                videoFile={videoFile} 
+                setVideoFile={setVideoFile} 
+              />
             </div>
-          )}
-        </form>
+            
+            {/* Players Section */}
+            <div className="form-section">
+              <h2>Players</h2>
+              <PlayerManagement 
+                players={players} 
+                setPlayers={setPlayers} 
+              />
+            </div>
+            
+            {/* Court Selection Section */}
+            <div className="form-section">
+              <h2>Court Selection</h2>
+              <CourtSelection 
+                selectedCourt={selectedCourt} 
+                setSelectedCourt={setSelectedCourt} 
+              />
+            </div>
+            
+            {/* Analysis Button */}
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'Analyze Video'}
+            </button>
+            
+            {/* Loading Indicator */}
+            {isAnalyzing && (
+              <div className="loading">
+                <div className="spinner"></div>
+                <p>Analyzing video... This may take a few minutes.</p>
+              </div>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );
