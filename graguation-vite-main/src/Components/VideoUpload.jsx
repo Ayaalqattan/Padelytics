@@ -1,5 +1,5 @@
-// File: src/components/VideoUpload.jsx
 import { useState, useRef } from 'react';
+import './VideoUpload.css';
 
 function VideoUpload({ videoFile, setVideoFile }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -15,7 +15,7 @@ function VideoUpload({ videoFile, setVideoFile }) {
     e.preventDefault();
     setIsDragging(true);
   };
-  
+   
   const handleDragLeave = () => {
     setIsDragging(false);
   };
@@ -34,25 +34,46 @@ function VideoUpload({ videoFile, setVideoFile }) {
   };
   
   return (
-    <div 
-      className={`file-upload ${isDragging ? 'dragging' : ''} ${videoFile ? 'has-file' : ''}`}
+    <div
+      className={`video-upload-container ${isDragging ? 'dragging' : ''} ${videoFile ? 'has-file' : ''}`}
       onClick={handleAreaClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <input 
-        type="file" 
+      <input
+        type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="video/*" 
+        accept="video/*"
         style={{ display: 'none' }}
       />
-      {videoFile ? (
-        <p>Selected file: {videoFile.name}</p>
-      ) : (
-        <p>Click or drag to upload video</p>
-      )}
+      
+      <div className="upload-content">
+        <div className="upload-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        
+        {videoFile ? (
+          <p className="upload-text">Selected file: {videoFile.name}</p>
+        ) : (
+          <p className="upload-text">select a video to upload</p>
+        )}
+      </div>
     </div>
   );
 }

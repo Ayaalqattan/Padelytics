@@ -1,0 +1,58 @@
+.video-upload-container {
+  width: 100%;
+  max-width: 320px;
+  height: 100px;
+  border: 2px dashed #2c9e1a;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #a3f283;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.video-upload-container:hover {
+  background-color: #b5f59b;
+}
+
+.video-upload-container.dragging {
+  background-color: #c9f7b6;
+  border: 3px dashed #228813;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.upload-icon {
+  margin-bottom: 8px;
+  color: #1d7013;
+}
+
+.upload-text {
+  margin: 0;
+  font-size: 16px;
+  color: #1d7013;
+  font-weight: 500;
+}
+
+.video-upload-container.has-file {
+  background-color: #d2f7c4;
+}
+
+.video-upload-container.has-file .upload-icon {
+  color: #228813;
+}
+
+@media (max-width: 480px) {
+  .video-upload-container {
+    max-width: 100%;
+  }
+}
