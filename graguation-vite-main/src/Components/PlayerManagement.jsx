@@ -204,6 +204,7 @@
 // export default CourtLayout;
 
 import React, { useState } from 'react';
+import how from '../assets/How to assign.png';
 import './PlayerManagement.css';
 
 function CourtLayout({ players }) {
@@ -312,9 +313,10 @@ function CourtLayout({ players }) {
         {showTooltip && (
           <div className="tooltip">
             <img 
-              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMkE1NEE5Ii8+CjxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxsaW5lIHgxPSIxMDAiIHkxPSIyMCIgeDI9IjEwMCIgeTI9IjEwMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxsaW5lIHgxPSIyMCIgeTE9IjYwIiB4Mj0iMTgwIiB5Mj0iNjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjQwIiByPSIxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkY2NjY2IiBzdHJva2Utd2lkdGg9IjMiLz4KPHN0eWxlPi50ZXh0e2ZvbnQtZmFtaWx5OkFyaWFsLHNhbnMtc2VyaWY7Zm9udC1zaXplOjE0cHg7Zm9udC13ZWlnaHQ6Ym9sZDtmaWxsOndoaXRlO308L3N0eWxlPgo8dGV4dCB4PSI1NiIgeT0iNDUiIGNsYXNzPSJ0ZXh0Ij4xPC90ZXh0Pgo8Y2lyY2xlIGN4PSIxNDAiIGN5PSI0MCIgcj0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGNjY2NiIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjx0ZXh0IHg9IjEzNiIgeT0iNDUiIGNsYXNzPSJ0ZXh0Ij4yPC90ZXh0Pgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjgwIiByPSIxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjZGRjY2IiBzdHJva2Utd2lkdGg9IjMiLz4KPHN0eWxlPi50ZXh0LWdyZWVue2ZvbnQtZmFtaWx5OkFyaWFsLHNhbnMtc2VyaWY7Zm9udC1zaXplOjE0cHg7Zm9udC13ZWlnaHQ6Ym9sZDtmaWxsOiM2NkZGNjY7fTwvc3R5bGU+Cjx0ZXh0IHg9IjU2IiB5PSI4NSIgY2xhc3M9InRleHQiPjM8L3RleHQ+CjxjaXJjbGUgY3g9IjE0MCIgY3k9IjgwIiByPSIxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjZGRjY2IiBzdHJva2Utd2lkdGg9IjMiLz4KPHRleHQgeD0iMTM2IiB5PSI4NSIgY2xhc3M9InRleHQiPjQ8L3RleHQ+Cjx0ZXh0IHg9IjEwIiB5PSIxMzAiIGNsYXNzPSJ0ZXh0IiBmb250LXNpemU9IjEwIj5Ib3cgdG8gYXNzaWduPC90ZXh0Pgo8L3N2Zz4=" 
+              src={how} 
               alt="Court Layout Guide" 
-              className="tooltip-image"/>
+              className="tooltip-image"
+            />
           </div>
         )}
       </div>
@@ -338,8 +340,6 @@ function CourtLayout({ players }) {
           onClose={() => setShowPlayerSelector(null)}
         />
       )}
-      
-
     </div>
   );
 }
