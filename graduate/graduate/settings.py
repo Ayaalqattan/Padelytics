@@ -62,6 +62,14 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = False    # تعيين False أثناء التطوير، و True في الإنتاج (بشرط استخدام HTTPS)
+import cloudinary
+
+cloudinary.config(
+    cloud_name="dqcgb73mf",
+    api_key="711966464192934",
+    api_secret="_6CYk7HyN4lF9ZG2NDjWrwAvDAw",
+    secure=True
+)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',  # تفعيل المصادقة باستخدام الجلسة

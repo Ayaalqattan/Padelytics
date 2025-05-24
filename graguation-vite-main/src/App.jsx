@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
-    fetch('http://localhost:8000/api/csrf/', {
+    fetch('http://localhost:8000/home/csrf/', {
       credentials: 'include',
     });
   }, []);

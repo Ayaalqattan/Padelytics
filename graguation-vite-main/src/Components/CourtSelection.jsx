@@ -10,14 +10,17 @@ function CourtSelection({ selectedCourt, setSelectedCourt }) {
       try {
         setLoading(true);
         // Replace with your actual API endpoint
-        const response = await fetch('/api/courts');
+        const response = await fetch('home/api/courts');
         
         if (!response.ok) {
           throw new Error(`Error fetching courts: ${response.status}`);
         }
         
         const data = await response.json();
-        setCourts(data);
+        console.log("API data:", data);
+        setCourts(data.court_names);
+
+;
       } catch (err) {
         console.error("Failed to fetch courts:", err);
         setError(err.message);
@@ -51,12 +54,14 @@ function CourtSelection({ selectedCourt, setSelectedCourt }) {
       </div>
     );
   }
-
+console.log('courts:', courts);
   return (
     <div className="grid grid-cols-2 gap-4">
       {courts.length === 0 ? (
         <p className="col-span-2 text-center text-gray-500">No courts available</p>
       ) : (
+        
+
         courts.map((court) => (
           <button
             key={court.id}
