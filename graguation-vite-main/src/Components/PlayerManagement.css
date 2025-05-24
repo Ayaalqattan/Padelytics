@@ -6,7 +6,7 @@
 .court {
   width: 100%;
   max-width: 500px;
-  background-color: #0047AB; /* Blue court background */
+  background-color: #0047AB;
   border: 2px solid #003366;
   border-radius: 8px;
   display: flex;
@@ -38,7 +38,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(144, 238, 144, 0.7); /* Light green with transparency */
+  background-color: rgba(144, 238, 144, 0.7); 
   border: 2px solid #90EE90;
   color: white;
   font-size: 24px;
@@ -160,8 +160,64 @@
   border-radius: 4px;
   cursor: pointer;
 }
-
-/* For the top left position specifically - to match your image with a player already assigned */
 .court-position.topLeft .player-avatar {
   border: 2px solid yellow;
+}
+/* Add these new styles to your existing CSS file */
+
+.help-section {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+}
+
+.info-icon {
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.info-icon:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.tooltip {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 250px;
+  z-index: 20;
+}
+
+.tooltip-image {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.tooltip-text h4 {
+  margin: 0 0 8px 0;
+  color: #2A54A9;
+  font-size: 14px;
+}
+
+.tooltip-text p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #666;
 }
