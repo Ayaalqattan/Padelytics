@@ -18,6 +18,69 @@ def home(request):
     form = Video_form()  # إنشاء نموذج رفع الفيديوهات
     return render(request, "home.html", {"form": form, "all_video": all_video})
 
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# import cloudinary
+# import cloudinary.uploader
+# import requests
+# import logging
+
+# logger = logging.getLogger(__name__)
+
+# class VideoUploadView(APIView):
+#     def post(self, request):
+#         try:
+#             # Check if a file is provided
+#             if 'video' not in request.FILES:
+#                 logger.error("No video file provided")
+#                 return Response({"error": "No video file provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+#             video_file = request.FILES['video']
+            
+#             # Upload to Cloudinary
+#             upload_result = cloudinary.uploader.upload(
+#                 video_file,
+#                 resource_type="video",
+#                 folder="videos"
+#             )
+            
+#             secure_url = upload_result.get("secure_url")
+#             logger.info(f"Upload successful: {secure_url}")
+
+#             # Prepare JSON payload for FastAPI
+#             fastapi_payload = {
+#                 "video_url": secure_url,
+#                 "destination_dir": "Uploads/videos",
+#                 "filename": "uploaded_video.mp4"
+#             }
+
+#             # Send request to FastAPI endpoint
+#             fastapi_url = "http://35.225.232.204/input-video/"  # Adjust based on actual endpoint
+#             try:
+#                 fastapi_response = requests.post(fastapi_url, json=fastapi_payload, timeout=10)
+#                 fastapi_response.raise_for_status()  # Raise exception for bad status codes
+#                 fastapi_data = fastapi_response.json()
+#                 logger.info(f"FastAPI response: {fastapi_data}")
+                
+#                 # Return combined response to frontend
+#                 return Response({
+#                     "message": "Success",
+#                     "url": secure_url,
+#                     "fastapi_response": fastapi_data
+#                 }, status=status.HTTP_200_OK)
+            
+#             except requests.exceptions.RequestException as e:
+#                 logger.error(f"FastAPI request failed: {str(e)}")
+#                 return Response({
+#                     "message": "Success",
+#                     "url": secure_url,
+#                     "fastapi_error": f"FastAPI processing failed: {str(e)}"
+#                 }, status=status.HTTP_200_OK)
+
+#         except Exception as e:
+#             logger.error(f"Upload failed: {str(e)}")
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -25,20 +88,49 @@ import cloudinary
 import cloudinary.uploader
 import requests
 import logging
+from firebase_admin import firestore
+import firebase_admin
+from datetime import datetime
+from firebase_config import db
+
 
 logger = logging.getLogger(__name__)
+
+# تهيئة Firebase (يجب أن تكون في مكان واحد في المشروع، مثل settings.py)
+# from firebase_admin import credentials, initialize_app
+# cred = credentials.Certificate("path/to/firebase-adminsdk.json")
+# initialize_app(cred)
 
 class VideoUploadView(APIView):
     def post(self, request):
         try:
-            # Check if a file is provided
+            # # التحقق من تسجيل دخول المستخدم
+            # if not request.user.is_authenticated:
+            #     logger.error("User not authenticated")
+            #     return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # التحقق من وجود ملف فيديو
             if 'video' not in request.FILES:
                 logger.error("No video file provided")
                 return Response({"error": "No video file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # استقبال الـ court والـ players من الطلب
+            court = request.data.get('court', 'Unknown Court')
+            players = request.data.get('players', [])
+            if isinstance(players, str):
+                players = [player.strip() for player in players.split(',')]
+            elif not isinstance(players, list):
+                players = []
+
+            if not court:
+                logger.warning("No court provided in the request")
+                court = "Unknown Court"
+            if not players:
+                logger.warning("No players provided in the request")
+
             video_file = request.FILES['video']
             
-            # Upload to Cloudinary
+            # رفع الفيديو إلى Cloudinary
             upload_result = cloudinary.uploader.upload(
                 video_file,
                 resource_type="video",
@@ -48,41 +140,110 @@ class VideoUploadView(APIView):
             secure_url = upload_result.get("secure_url")
             logger.info(f"Upload successful: {secure_url}")
 
-            # Prepare JSON payload for FastAPI
+            # إعداد البيانات لإرسالها إلى FastAPI
             fastapi_payload = {
                 "video_url": secure_url,
                 "destination_dir": "Uploads/videos",
                 "filename": "uploaded_video.mp4"
             }
 
-            # Send request to FastAPI endpoint
-            fastapi_url = "http://35.225.232.204/input-video/"  # Adjust based on actual endpoint
+            # إرسال طلب إلى FastAPI
+            fastapi_url = "http://35.225.232.204/input-video/"  # رابط الـ FastAPI
             try:
-                fastapi_response = requests.post(fastapi_url, json=fastapi_payload, timeout=10)
-                fastapi_response.raise_for_status()  # Raise exception for bad status codes
+                fastapi_response = requests.post(fastapi_url, json=fastapi_payload, timeout=3600)  # زيادة إلى 60 دقيقة
+                fastapi_response.raise_for_status()
                 fastapi_data = fastapi_response.json()
                 logger.info(f"FastAPI response: {fastapi_data}")
+
+                # تهيئة بيانات للحفظ في Firestore
+                db = firestore.client()
+                user_id = request.user.id
+                user_ref = db.collection('users').document(str(user_id))
+                match_ref = user_ref.collection('uploaded_matches').document(fastapi_data.get("matchID", secure_url.split("/")[-1]))
+
+                # التعامل مع formattedTime بأمان
+                try:
+                    formatted_time = fastapi_data.get("formattedTime", datetime.now().strftime("%d-%m-%Y %H:%M"))
+                except UnicodeEncodeError:
+                    logger.error("Encoding error in formattedTime, using default format")
+                    formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+
+                match_data = {
+                    "court": court,
+                    "formattedTime": formatted_time,
+                    "matchID": fastapi_data.get("matchID", secure_url.split("/")[-1]),
+                    "matchUrl": secure_url,
+                    "players": players,
+                    "timestamp": fastapi_data.get("timestamp", int(datetime.now().timestamp()))
+                }
                 
-                # Return combined response to frontend
+                match_ref.set(match_data)
+                logger.info(f"Data saved to Firestore for user {user_id}")
+
                 return Response({
                     "message": "Success",
                     "url": secure_url,
-                    "fastapi_response": fastapi_data
+                    "fastapi_response": fastapi_data,
+                    "firestore_status": "Data saved successfully"
                 }, status=status.HTTP_200_OK)
             
-            except requests.exceptions.RequestException as e:
-                logger.error(f"FastAPI request failed: {str(e)}")
+            except requests.exceptions.Timeout:
+                logger.error("FastAPI request timed out after 60 minutes")
+                db = firestore.client()
+                user_id = request.user.id
+                user_ref = db.collection('users').document(str(user_id))
+                match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
+                
+                formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+                match_data = {
+                    "court": court,
+                    "formattedTime": formatted_time,
+                    "matchID": secure_url.split("/")[-1],
+                    "matchUrl": secure_url,
+                    "players": players,
+                    "timestamp": int(datetime.now().timestamp()),
+                    "error": "FastAPI request timed out after 60 minutes"
+                }
+                match_ref.set(match_data)
+                logger.info(f"Data (with timeout error) saved to Firestore for user {user_id}")
+
                 return Response({
                     "message": "Success",
                     "url": secure_url,
-                    "fastapi_error": f"FastAPI processing failed: {str(e)}"
+                    "fastapi_error": "FastAPI request timed out after 60 minutes",
+                    "firestore_status": "Data saved with timeout error"
+                }, status=status.HTTP_200_OK)
+
+            except requests.exceptions.RequestException as e:
+                logger.error(f"FastAPI request failed: {str(e)}")
+                db = firestore.client()
+                user_id = request.user.id
+                user_ref = db.collection('users').document(str(user_id))
+                match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
+                
+                formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+                match_data = {
+                    "court": court,
+                    "formattedTime": formatted_time,
+                    "matchID": secure_url.split("/")[-1],
+                    "matchUrl": secure_url,
+                    "players": players,
+                    "timestamp": int(datetime.now().timestamp()),
+                    "error": f"FastAPI processing failed: {str(e)}"
+                }
+                match_ref.set(match_data)
+                logger.info(f"Data (with error) saved to Firestore for user {user_id}")
+
+                return Response({
+                    "message": "Success",
+                    "url": secure_url,
+                    "fastapi_error": f"FastAPI processing failed: {str(e)}",
+                    "firestore_status": "Data saved with error"
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.error(f"Upload failed: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-# API لصفحة المتجر
 class ShopView(APIView):
     def get(self, request, *args, **kwargs):
         data = {"message": "هذه صفحة المتجر"}

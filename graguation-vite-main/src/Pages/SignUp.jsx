@@ -289,7 +289,7 @@ function Signup() {
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
+  const [userName, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -321,13 +321,13 @@ function Signup() {
     const userData = {
       firstName,
       lastName,
-      username,
+      userName,
       email,
       password,
       gender,
       level,
       governorate,
-      birthday
+      birthday,
     };
 
     try {
@@ -405,7 +405,7 @@ function Signup() {
             <input
               type="text"
               placeholder="Username"
-              value={username}
+              value={userName}
               onChange={(e) => setUsername(e.target.value)}
               required
             />

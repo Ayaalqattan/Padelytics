@@ -126,17 +126,21 @@ FIREBASE_WEB_API_KEY = "AIzaSyBlWYhG8sSKRCqn4t6Qp_T30xhf-gvwLwI"
 @permission_classes([AllowAny])
 @csrf_exempt
 def signup(request):
-    username = request.data.get("username")
+    userName = request.data.get("userName")
+    firstName=request.data.get("firstName")
+    lastName=request.data.get("lastName")
     email    = request.data.get("email")
     password = request.data.get("password")
     level    = request.data.get("level")  # ← إضافة هذا السطر
-
-    if not username or not email or not password or not level:
+    birthday= request.data.get("birthday")
+    governorate=request.data.get("governorate")
+    gender=request.data.get("gender")
+    if not userName or not email or not password or not level:
         return Response({"message": "الرجاء إدخال جميع الحقول"}, status=status.HTTP_400_BAD_REQUEST)
 
     # تحقق من عدم وجود اسم المستخدم مسبقًا
     users_ref = db.collection('users')
-    existing_user_query = users_ref.where('username', '==', username).stream()
+    existing_user_query = users_ref.where('userName', '==', userName).stream()
     if any(existing_user_query):
         return Response({"message": "اسم المستخدم مستخدم بالفعل"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -146,10 +150,15 @@ def signup(request):
 
         # حفظ بيانات المستخدم في جدول users
         users_ref.document(user.uid).set({
+            'firstName':firstName,
+            'lastName':lastName,
+             'gender':gender,
             'email': email,
-            'username': username,
+            'userName': userName,
             'uid': user.uid,
             'level': level,  # ← حفظ المستوى هنا
+            'birthday': birthday,
+            'governorate':governorate,
             'wins': 0,
             'losses': 0,
             'matches': 0,
