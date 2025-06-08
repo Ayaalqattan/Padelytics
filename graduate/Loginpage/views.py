@@ -207,7 +207,9 @@ def login_view(request):
     if res.status_code == 200:
         request.session['uid'] = uid
         request.session.set_expiry(1209600 if remember_me else 0)
-        return Response({"message": "تم تسجيل الدخول", "uid": uid})
+        user_data = user_doc.to_dict()
+        user_name = user_data.get("userName", "")
+        return Response({"message": "تم تسجيل الدخول", "uid": uid, "userName": user_name})
 
     firebase_error = res_data.get('error', {}).get('message', '')
     return Response(

@@ -92,11 +92,29 @@ from firebase_admin import firestore
 import firebase_admin
 from datetime import datetime
 from firebase_config import db
+logger = logging.getLogger(__name__)
 
+
+
+
+# تهيئة Firebase (يجب أن تكون في مكان واحد في المشروع، مثل settings.py)
+# from firebase_admin import credentials, initialize_app
+# cred = credentials.Certificate("path/to/firebase-adminsdk.json")
+# initialize_app(cred)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+import cloudinary
+import cloudinary.uploader
+import requests
+import logging
+from firebase_admin import firestore
+import firebase_admin
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# تهيئة Firebase (يجب أن تكون في مكان واحد في المشروع، مثل settings.py)
+# تأكد من تهيئة Firebase (يجب أن تتم مرة واحدة في إعدادات Django أو بداية التطبيق)
 # from firebase_admin import credentials, initialize_app
 # cred = credentials.Certificate("path/to/firebase-adminsdk.json")
 # initialize_app(cred)
@@ -104,29 +122,40 @@ logger = logging.getLogger(__name__)
 class VideoUploadView(APIView):
     def post(self, request):
         try:
-            # # التحقق من تسجيل دخول المستخدم
-            # if not request.user.is_authenticated:
-            #     logger.error("User not authenticated")
-            #     return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+            # تهيئة عميل Firestore في البداية
+            db = firestore.client()
 
             # التحقق من وجود ملف فيديو
             if 'video' not in request.FILES:
-                logger.error("No video file provided")
-                return Response({"error": "No video file provided"}, status=status.HTTP_400_BAD_REQUEST)
+                logger.error("لم يتم توفير ملف فيديو")
+                return Response({"error": "لم يتم توفير ملف فيديو"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # سجل لتتبع البيانات المستلمة
+            logger.debug(f"البيانات المستلمة: {dict(request.data)}")
 
             # استقبال الـ court والـ players من الطلب
-            court = request.data.get('court', 'Unknown Court')
-            players = request.data.get('players', [])
-            if isinstance(players, str):
-                players = [player.strip() for player in players.split(',')]
-            elif not isinstance(players, list):
+            court_id = request.data.get('court', None)
+            players_str = request.data.get('players', '')
+            if isinstance(players_str, str) and players_str:
+                players = [player.strip() for player in players_str.split(',') if player.strip()]
+            else:
                 players = []
 
-            if not court:
-                logger.warning("No court provided in the request")
-                court = "Unknown Court"
+            # التعامل مع الـ court
+            if not court_id:
+                logger.warning("لم يتم توفير الملعب في الطلب")
+                court_name = "ملعب غير معروف"
+            else:
+                court_doc = db.collection('courts').document(court_id).get()
+                if not court_doc.exists:
+                    logger.warning(f"الملعب بمعرف '{court_id}' غير موجود في Firestore")
+                    court_name = "ملعب غير معروف"
+                else:
+                    court_data = court_doc.to_dict()
+                    court_name = court_data.get('courtName', 'ملعب غير معروف')
+
             if not players:
-                logger.warning("No players provided in the request")
+                logger.warning("لم يتم توفير لاعبين في الطلب")
 
             video_file = request.FILES['video']
             
@@ -138,38 +167,38 @@ class VideoUploadView(APIView):
             )
             
             secure_url = upload_result.get("secure_url")
-            logger.info(f"Upload successful: {secure_url}")
+            logger.info(f"تم الرفع بنجاح: {secure_url}")
 
             # إعداد البيانات لإرسالها إلى FastAPI
             fastapi_payload = {
                 "video_url": secure_url,
                 "destination_dir": "Uploads/videos",
-                "filename": "uploaded_video.mp4"
+                "filename": "uploaded_video.mp4",
+                "players": players,
+                "court": court_id
             }
 
             # إرسال طلب إلى FastAPI
-            fastapi_url = "http://35.225.232.204/input-video/"  # رابط الـ FastAPI
+            fastapi_url = "http://34.44.128.145/input-video/"
             try:
-                fastapi_response = requests.post(fastapi_url, json=fastapi_payload, timeout=3600)  # زيادة إلى 60 دقيقة
+                fastapi_response = requests.post(fastapi_url, json=fastapi_payload )
                 fastapi_response.raise_for_status()
                 fastapi_data = fastapi_response.json()
-                logger.info(f"FastAPI response: {fastapi_data}")
+                logger.info(f"استجابة FastAPI: {fastapi_data}")
 
                 # تهيئة بيانات للحفظ في Firestore
-                db = firestore.client()
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
                 match_ref = user_ref.collection('uploaded_matches').document(fastapi_data.get("matchID", secure_url.split("/")[-1]))
 
-                # التعامل مع formattedTime بأمان
                 try:
                     formatted_time = fastapi_data.get("formattedTime", datetime.now().strftime("%d-%m-%Y %H:%M"))
                 except UnicodeEncodeError:
-                    logger.error("Encoding error in formattedTime, using default format")
+                    logger.error("خطأ في ترميز formattedTime، باستخدام التنسيق الافتراضي")
                     formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
 
                 match_data = {
-                    "court": court,
+                    "court": court_name,
                     "formattedTime": formatted_time,
                     "matchID": fastapi_data.get("matchID", secure_url.split("/")[-1]),
                     "matchUrl": secure_url,
@@ -178,71 +207,69 @@ class VideoUploadView(APIView):
                 }
                 
                 match_ref.set(match_data)
-                logger.info(f"Data saved to Firestore for user {user_id}")
+                logger.info(f"تم حفظ البيانات في Firestore للمستخدم {user_id}")
 
                 return Response({
-                    "message": "Success",
+                    "message": "نجاح",
                     "url": secure_url,
                     "fastapi_response": fastapi_data,
-                    "firestore_status": "Data saved successfully"
+                    "firestore_status": "تم حفظ البيانات بنجاح"
                 }, status=status.HTTP_200_OK)
             
             except requests.exceptions.Timeout:
-                logger.error("FastAPI request timed out after 60 minutes")
-                db = firestore.client()
+                logger.error("انتهت مهلة طلب FastAPI بعد 60 دقيقة")
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
                 match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
                 
                 formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
                 match_data = {
-                    "court": court,
+                    "court": court_name,
                     "formattedTime": formatted_time,
                     "matchID": secure_url.split("/")[-1],
                     "matchUrl": secure_url,
                     "players": players,
                     "timestamp": int(datetime.now().timestamp()),
-                    "error": "FastAPI request timed out after 60 minutes"
+                    "error": "انتهت مهلة طلب FastAPI بعد 60 دقيقة"
                 }
                 match_ref.set(match_data)
-                logger.info(f"Data (with timeout error) saved to Firestore for user {user_id}")
+                logger.info(f"تم حفظ البيانات (مع خطأ المهلة) في Firestore للمستخدم {user_id}")
 
                 return Response({
-                    "message": "Success",
+                    "message": "نجاح",
                     "url": secure_url,
-                    "fastapi_error": "FastAPI request timed out after 60 minutes",
-                    "firestore_status": "Data saved with timeout error"
+                    "fastapi_error": "انتهت مهلة طلب FastAPI بعد 60 دقيقة",
+                    "firestore_status": "تم حفظ البيانات مع خطأ المهلة"
                 }, status=status.HTTP_200_OK)
 
             except requests.exceptions.RequestException as e:
-                logger.error(f"FastAPI request failed: {str(e)}")
-                db = firestore.client()
+                logger.error(f"فشل طلب FastAPI: {str(e)}")
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
                 match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
                 
                 formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
                 match_data = {
-                    "court": court,
+                    "court": court_name,
                     "formattedTime": formatted_time,
                     "matchID": secure_url.split("/")[-1],
                     "matchUrl": secure_url,
                     "players": players,
                     "timestamp": int(datetime.now().timestamp()),
-                    "error": f"FastAPI processing failed: {str(e)}"
+                    "error": f"فشل معالجة FastAPI: {str(e)}"
                 }
                 match_ref.set(match_data)
-                logger.info(f"Data (with error) saved to Firestore for user {user_id}")
+                logger.info(f"تم حفظ البيانات (مع خطأ) في Firestore للمستخدم {user_id}")
 
                 return Response({
-                    "message": "Success",
+                    "message": "نجاح",
                     "url": secure_url,
-                    "fastapi_error": f"FastAPI processing failed: {str(e)}",
-                    "firestore_status": "Data saved with error"
+                    "fastapi_error": f"فشل معالجة FastAPI: {str(e)}",
+                    "firestore_status": "تم حفظ البيانات مع خطأ"
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            logger.error(f"Upload failed: {str(e)}")
+            logger.error(f"فشل الرفع: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class ShopView(APIView):
     def get(self, request, *args, **kwargs):
@@ -368,7 +395,7 @@ def update_profile(request):
     if not uid:
         return Response({"message": "غير مسجل الدخول"}, status=401)
 
-    username = request.data.get('username')
+    userName = request.data.get('userName')
     email = request.data.get('email')
     level = request.data.get('level')
 
@@ -382,9 +409,9 @@ def update_profile(request):
         current_data = user_doc.to_dict()
 
         # ✅ تحقق من تكرار الاسم (إن وجد وتم تغييره)
-        if username and username != current_data.get('username'):
-            existing_username = db.collection('users').where('username', '==', username).stream()
-            if any(existing_username):
+        if userName and userName != current_data.get('userName'):
+            existing_userName = db.collection('users').where('userName', '==', userName).stream()
+            if any(existing_userName):
                 return Response({"message": "اسم المستخدم مستخدم بالفعل"}, status=400)
 
         # ✅ تحقق من تكرار الإيميل (إن وجد وتم تغييره)
@@ -395,17 +422,18 @@ def update_profile(request):
 
         # تحديث البيانات
         updates = {}
-        if username: updates['username'] = username
+        if userName: updates['userName'] = userName
         if email: updates['email'] = email
         if level: updates['level'] = level
 
         user_ref.update(updates)
+        updated_doc = user_ref.get().to_dict()
 
         # تحديث البريد الإلكتروني في Firebase Auth
         if email and email != current_data.get('email'):
             firebase_auth.update_user(uid, email=email)
 
-        return Response({"message": "تم تحديث البيانات بنجاح"}, status=200)
+        return Response({"message": "تم تحديث البيانات بنجاح" ,"userName": updated_doc.get('userName')}, status=200)
 
     except Exception as e:
         return Response({"message": f"حدث خطأ أثناء التحديث: {str(e)}"}, status=400)

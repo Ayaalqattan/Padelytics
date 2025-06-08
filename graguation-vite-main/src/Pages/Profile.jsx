@@ -1290,10 +1290,13 @@ function Profile() {
 
       const data = await response.json();
       setUserData(prev => ({ ...prev, ...data }));
+      localStorage.setItem('userName', data.userName); // ← أو data.new_username حسب اسم الحقل الراجع
+
       setSuccess(prev => ({ ...prev, update: 'Profile updated successfully!' }));
       setTimeout(() => {
         setIsEditing(false);
         setSuccess(prev => ({ ...prev, update: null }));
+        window.location.reload(); 
       }, 2000);
     } catch (err) {
       setErrors(prev => ({ ...prev, update: err.message }));
@@ -1370,8 +1373,9 @@ function Profile() {
     } catch (err) {
       console.error('Logout failed:', err);
     } finally {
-      localStorage.removeItem('token');
-      window.location.href = '/';
+      localStorage.removeItem('userName');
+      setUserName(null); 
+     window.location.reload();
     }
   }, [csrfToken]);
 
@@ -1379,7 +1383,7 @@ function Profile() {
   const toggleEditMode = useCallback(() => {
     if (isEditing) {
       setFormData({
-        userName: userData.userName || userData.name || '',
+        userName: userData.userName || userData.Name || '',
         level: userData.level || 'beginner',
       });
     }

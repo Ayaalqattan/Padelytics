@@ -32,6 +32,7 @@ function Login() {
       const msg = response.data.message;
       if (msg === 'تم تسجيل الدخول' || msg === 'تم تسجيل الدخول بنجاح' || msg === 'تم تسجيل الدخول بنجاح!') {
         // الانتقال للصفحة الرئيسية
+        localStorage.setItem('userName', response.data.userName);
         navigate('/');
         return;
       }
