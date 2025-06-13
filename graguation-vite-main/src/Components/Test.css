@@ -1,0 +1,667 @@
+/* Tennis Match Dashboard Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  min-height: 100vh;
+}
+
+.dashboard {
+  /* INCREASE MAX-WIDTH FOR WIDER CONTENT */
+  /* This was 800px. Increasing to 1200px or higher allows more horizontal space. */
+  max-width: 1200px; /* Increased from 800px */
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* Section Styling */
+.section {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: white;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-header svg {
+  color: #00ff88;
+}
+
+.ball-indicator {
+  width: 8px;
+  height: 8px;
+  background: #00ff88;
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+/* Match Results */
+.match-results {
+  text-align: center;
+}
+
+.teams-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 4px;
+}
+
+.player-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.vs-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+/* About The Ball */
+.about-ball {
+  background: linear-gradient(135deg, #1a4480 0%, #2d5aa0 100%);
+}
+
+.swiper-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.swiper-arrow {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.swiper-arrow:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.swiper-arrow.left {
+  margin-right: 12px;
+}
+
+.swiper-arrow.right {
+  margin-left: 12px;
+}
+
+.chart-content {
+  flex: 1;
+  text-align: center;
+  /* Add min-height to ensure content always has enough space */
+  min-height: 250px; /* Ensures chart content area has a base height */
+  display: flex; /* Use flex to align chart components if needed */
+  flex-direction: column;
+  justify-content: center;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: white;
+}
+
+/* Court Visualization (for Ball Hits Locations and Ball Trajectory) */
+.court-visualization {
+  position: relative;
+  width: 100%;
+  /* INCREASE HEIGHT */
+  height: 350px; /* Increased from 200px */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.court-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+  /* Adjust background-size if you want more or fewer grid lines relative to the new size */
+  background-size: 25% 33.33%;
+}
+
+.court-grid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%);
+}
+
+.court-grid::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-50%);
+}
+
+/* Ball hits and trajectory */
+.ball-hit-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.trajectory-point {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00ff88;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 2px rgba(0, 255, 136, 0.5);
+}
+
+.heatmap-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, rgba(255, 170, 0, 0.6) 0%, rgba(255, 170, 0, 0.2) 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hit-point {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ff4444;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
+}
+
+.trajectory-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Top Speeds Visualization */
+.top-speeds-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  /* INCREASE HEIGHT */
+  height: 200px; /* Increased from 120px */
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.speed-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%; /* Important: Takes full height of parent `top-speeds-container` */
+  width: 60px;
+}
+
+.speed-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.player-name {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2px;
+}
+
+.speed-value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #00ff88;
+}
+
+.speed-rank {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #00ff88;
+  color: #1e3c72;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.speed-bar-fill {
+  width: 20px;
+  background: linear-gradient(to top, #00ff88, #00cc6a);
+  border-radius: 4px 4px 0 0;
+  margin-top: auto; /* Pushes the bar to the bottom */
+  min-height: 20px; /* Ensure a minimum visible height */
+  transition: height 0.5s ease;
+  /* The height for this is set dynamically in JS, but this ensures it fills its container */
+}
+
+/* Hits Chart (Bar chart from Chart.js) */
+.hits-chart {
+  /* INCREASE HEIGHT */
+  height: 200px; /* Increased from 120px */
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Match Animation */
+.match-animation {
+  background: linear-gradient(135deg, #2d5aa0 0%, #1a4480 100%);
+}
+
+/* The actual court visualization for animation needs to be made larger too */
+.match-animation .court-visualization {
+    height: 400px; /* Already set to 400px in your original inline style, but explicitly here for clarity */
+}
+
+.animated-player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: all 0.8s ease-in-out;
+}
+
+.player-dot {
+  width: 12px;
+  height: 12px;
+  background: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  margin-bottom: 4px;
+}
+
+.player-label {
+  font-size: 8px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.animated-ball {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ffaa00;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px rgba(255, 170, 0, 0.8);
+  transition: all 0.8s ease-in-out;
+}
+
+/* Player Analysis */
+.player-analysis {
+  background: linear-gradient(135deg, #1a4480 0%, #2d5aa0 100%);
+}
+
+.player-swiper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.player-nav {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  margin-top: 60px;
+}
+
+.player-nav:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.player-nav.left {
+  margin-right: 12px;
+}
+
+.player-nav.right {
+  margin-left: 12px;
+}
+
+.player-content {
+  flex: 1;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.player-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #00ff88;
+}
+
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.player-name-large {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.player-level {
+  font-size: 14px;
+  color: #00ff88;
+  font-weight: 500;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  /* Adjusted minmax to allow cards to be wider */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Increased min-width */
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ff88;
+}
+
+/* Insights */
+.insights {
+  margin-bottom: 24px;
+}
+
+.insight-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-left: 3px solid #00ff88;
+}
+
+.insight-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.insight-value {
+  display: inline-block;
+  font-size: 12px;
+  color: #00ff88;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.insight-advice {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+/* Charts Grid for Player Analysis */
+.charts-grid {
+  display: grid;
+  /* Adjusted minmax for player analysis charts to be wider */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Increased min-width */
+  gap: 24px;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.chart-container h4 {
+  font-size: 12px;
+  color: white;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+/* Mini Court visualizations (for player trajectory, heatmap, hit points) */
+.mini-court {
+  position: relative;
+  width: 100%;
+  /* INCREASE HEIGHT */
+  height: 250px; /* Increased from 120px */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Zone Chart (Attack vs Defence) */
+.zone-chart {
+  /* INCREASE HEIGHT */
+  height: 180px; /* Increased from 80px */
+  /* Ensure the bar chart canvas takes full height */
+}
+
+/* Radar Chart Container */
+.radar-chart-container {
+    /* INCREASE HEIGHT */
+    height: 250px; /* Adjust as needed for the radar chart */
+    width: 100%; /* Ensure it takes full width of its parent */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 900px) { /* Added a breakpoint for wider screens */
+    .dashboard {
+        max-width: 95%; /* Adjust as needed */
+    }
+    .charts-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    max-width: 100%;
+    padding: 24px 16px;
+  }
+
+  .section {
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Force single column for smaller screens if content still too narrow */
+  .stats-grid,
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .teams-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .vs-text {
+    order: 1; /* Puts VS text between teams on mobile */
+  }
+
+  /* Reset heights for mobile if needed, or keep larger if preferred */
+  .court-visualization,
+  .top-speeds-container,
+  .hits-chart,
+  .mini-court,
+  .zone-chart,
+  .radar-chart-container {
+      height: auto; /* Allow content to dictate height */
+      min-height: 200px; /* Set a reasonable minimum */
+  }
+}
+
+/* Animation for smooth transitions (React state changes, not CSS transitions) */
+/* The actual transitions are handled by React's rendering and `transition` properties on animated elements themselves. */
+/* .chart-content, */
+/* .player-content { */
+/* transition: opacity 0.3s ease; */
+/* } */
+
+/* Loading states */
+/* .loading { */
+/* opacity: 0.6; */
+/* pointer-events: none; */
+/* } */
+
+/* Hover effects */
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.insight-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+/* Focus states for accessibility */
+.swiper-arrow:focus,
+.player-nav:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for mobile */
+/* Note: The 'player-content' is not typically scrollable unless you give it a max-height/height. */
+/* If you want internal scrolling, make sure player-content itself has `overflow-y: auto;` or `scroll;` */
+.player-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.player-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.player-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.5);
+  border-radius: 2px;
+}
+
+.player-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.7);
+}
