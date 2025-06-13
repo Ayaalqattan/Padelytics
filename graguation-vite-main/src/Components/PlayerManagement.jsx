@@ -237,8 +237,14 @@ function CourtLayout({ players }) {
   
   // Component for player selector popup
   const PlayerSelector = ({ position, onSelect, onClose }) => {
+    // Get all currently assigned player IDs
+    const assignedPlayerIds = Object.values(courtPositions)
+      .filter(player => player !== null)
+      .map(player => player.id);
+    
+    // Filter out players that are already assigned
     const availablePlayers = players.filter(player => 
-      !Object.values(courtPositions).some(pos => pos && pos.id === player.id)
+      !assignedPlayerIds.includes(player.id)
     );
     
     return (
@@ -246,7 +252,7 @@ function CourtLayout({ players }) {
         <div className="player-selector-content">
           <h3>Select Player for Position {position}</h3>
           {availablePlayers.length === 0 ? (
-            <p>No available players. Add players first.</p>
+            <p>No available players. Add players first or remove players from other positions.</p>
           ) : (
             <ul>
               {availablePlayers.map(player => (
