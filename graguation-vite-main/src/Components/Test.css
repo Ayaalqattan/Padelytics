@@ -5,14 +5,20 @@
   box-sizing: border-box;
 }
 
-body {
+/* Remove body and html background properties from here */
+/* These styles should be defined at the global level of your project (e.g., in App.css or index.css) */
+/* NOT within a component-specific CSS file if you don't want them to override everything. */
+
+/* Instead, apply the specific dashboard background to its container */
+.tennis-dashboard-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* Apply background here */
   color: white;
-  min-height: 100vh;
+  min-height: 100vh; /* Ensure it takes full height if it's the main container */
 }
 
-.dashboard {
+
+.tennis-dashboard-container .dashboard { /* This targets .dashboard INSIDE .tennis-dashboard-container */
   /* INCREASE MAX-WIDTH FOR WIDER CONTENT */
   /* This was 800px. Increasing to 1200px or higher allows more horizontal space. */
   max-width: 1200px; /* Increased from 800px */
@@ -22,7 +28,7 @@ body {
 }
 
 /* Section Styling */
-.section {
+.tennis-dashboard-container .section { /* Prefix all relevant rules */
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -31,25 +37,25 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.section-title {
+.tennis-dashboard-container .section-title {
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 24px;
   color: white;
 }
 
-.section-header {
+.tennis-dashboard-container .section-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }
 
-.section-header svg {
+.tennis-dashboard-container .section-header svg {
   color: #00ff88;
 }
 
-.ball-indicator {
+.tennis-dashboard-container .ball-indicator {
   width: 8px;
   height: 8px;
   background: #00ff88;
@@ -58,25 +64,25 @@ body {
 }
 
 /* Match Results */
-.match-results {
+.tennis-dashboard-container .match-results {
   text-align: center;
 }
 
-.teams-container {
+.tennis-dashboard-container .teams-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 16px;
 }
 
-.team {
+.tennis-dashboard-container .team {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
 
-.player-circle {
+.tennis-dashboard-container .player-circle {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -85,35 +91,35 @@ body {
   margin-bottom: 4px;
 }
 
-.player-circle img {
+.tennis-dashboard-container .player-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.player-name {
+.tennis-dashboard-container .player-name {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
 }
 
-.vs-text {
+.tennis-dashboard-container .vs-text {
   font-size: 16px;
   font-weight: bold;
   color: white;
 }
 
 /* About The Ball */
-.about-ball {
+.tennis-dashboard-container .about-ball {
   background: linear-gradient(135deg, #1a4480 0%, #2d5aa0 100%);
 }
 
-.swiper-container {
+.tennis-dashboard-container .swiper-container {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.swiper-arrow {
+.tennis-dashboard-container .swiper-arrow {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
@@ -128,19 +134,19 @@ body {
   flex-shrink: 0;
 }
 
-.swiper-arrow:hover {
+.tennis-dashboard-container .swiper-arrow:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.swiper-arrow.left {
+.tennis-dashboard-container .swiper-arrow.left {
   margin-right: 12px;
 }
 
-.swiper-arrow.right {
+.tennis-dashboard-container .swiper-arrow.right {
   margin-left: 12px;
 }
 
-.chart-content {
+.tennis-dashboard-container .chart-content {
   flex: 1;
   text-align: center;
   /* Add min-height to ensure content always has enough space */
@@ -150,7 +156,7 @@ body {
   justify-content: center;
 }
 
-.chart-title {
+.tennis-dashboard-container .chart-title {
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 16px;
@@ -158,7 +164,7 @@ body {
 }
 
 /* Court Visualization (for Ball Hits Locations and Ball Trajectory) */
-.court-visualization {
+.tennis-dashboard-container .court-visualization {
   position: relative;
   width: 100%;
   /* INCREASE HEIGHT */
@@ -168,7 +174,7 @@ body {
   overflow: hidden;
 }
 
-.court-grid {
+.tennis-dashboard-container .court-grid {
   position: relative;
   width: 100%;
   height: 100%;
@@ -179,7 +185,7 @@ body {
   background-size: 25% 33.33%;
 }
 
-.court-grid::before {
+.tennis-dashboard-container .court-grid::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -190,7 +196,7 @@ body {
   transform: translateY(-50%);
 }
 
-.court-grid::after {
+.tennis-dashboard-container .court-grid::after {
   content: '';
   position: absolute;
   top: 0;
@@ -202,7 +208,7 @@ body {
 }
 
 /* Ball hits and trajectory */
-.ball-hit-dot {
+.tennis-dashboard-container .ball-hit-dot {
   position: absolute;
   width: 6px;
   height: 6px;
@@ -211,7 +217,7 @@ body {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
-.trajectory-point {
+.tennis-dashboard-container .trajectory-point {
   position: absolute;
   width: 4px;
   height: 4px;
@@ -221,7 +227,7 @@ body {
   box-shadow: 0 0 2px rgba(0, 255, 136, 0.5);
 }
 
-.heatmap-point {
+.tennis-dashboard-container .heatmap-point {
   position: absolute;
   width: 8px;
   height: 8px;
@@ -230,7 +236,7 @@ body {
   transform: translate(-50%, -50%);
 }
 
-.hit-point {
+.tennis-dashboard-container .hit-point {
   position: absolute;
   width: 6px;
   height: 6px;
@@ -240,7 +246,7 @@ body {
   box-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
 }
 
-.trajectory-line {
+.tennis-dashboard-container .trajectory-line {
   position: absolute;
   top: 0;
   left: 0;
@@ -249,7 +255,7 @@ body {
 }
 
 /* Top Speeds Visualization */
-.top-speeds-container {
+.tennis-dashboard-container .top-speeds-container {
   display: flex;
   justify-content: space-around;
   align-items: flex-end;
@@ -260,7 +266,7 @@ body {
   border-radius: 8px;
 }
 
-.speed-bar {
+.tennis-dashboard-container .speed-bar {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -269,26 +275,26 @@ body {
   width: 60px;
 }
 
-.speed-info {
+.tennis-dashboard-container .speed-info {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.player-name {
+.tennis-dashboard-container .player-name {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 2px;
 }
 
-.speed-value {
+.tennis-dashboard-container .speed-value {
   font-size: 12px;
   font-weight: bold;
   color: #00ff88;
 }
 
-.speed-rank {
+.tennis-dashboard-container .speed-rank {
   position: absolute;
   top: -8px;
   right: -8px;
@@ -304,7 +310,7 @@ body {
   font-weight: bold;
 }
 
-.speed-bar-fill {
+.tennis-dashboard-container .speed-bar-fill {
   width: 20px;
   background: linear-gradient(to top, #00ff88, #00cc6a);
   border-radius: 4px 4px 0 0;
@@ -315,7 +321,7 @@ body {
 }
 
 /* Hits Chart (Bar chart from Chart.js) */
-.hits-chart {
+.tennis-dashboard-container .hits-chart {
   /* INCREASE HEIGHT */
   height: 200px; /* Increased from 120px */
   background: rgba(255, 255, 255, 0.05);
@@ -324,22 +330,22 @@ body {
 }
 
 /* Match Animation */
-.match-animation {
+.tennis-dashboard-container .match-animation {
   background: linear-gradient(135deg, #2d5aa0 0%, #1a4480 100%);
 }
 
 /* The actual court visualization for animation needs to be made larger too */
-.match-animation .court-visualization {
+.tennis-dashboard-container .match-animation .court-visualization {
     height: 400px; /* Already set to 400px in your original inline style, but explicitly here for clarity */
 }
 
-.animated-player {
+.tennis-dashboard-container .animated-player {
   position: absolute;
   transform: translate(-50%, -50%);
   transition: all 0.8s ease-in-out;
 }
 
-.player-dot {
+.tennis-dashboard-container .player-dot {
   width: 12px;
   height: 12px;
   background: #00ff88;
@@ -348,7 +354,7 @@ body {
   margin-bottom: 4px;
 }
 
-.player-label {
+.tennis-dashboard-container .player-label {
   font-size: 8px;
   color: white;
   background: rgba(0, 0, 0, 0.5);
@@ -357,7 +363,7 @@ body {
   white-space: nowrap;
 }
 
-.animated-ball {
+.tennis-dashboard-container .animated-ball {
   position: absolute;
   width: 6px;
   height: 6px;
@@ -369,17 +375,17 @@ body {
 }
 
 /* Player Analysis */
-.player-analysis {
+.tennis-dashboard-container .player-analysis {
   background: linear-gradient(135deg, #1a4480 0%, #2d5aa0 100%);
 }
 
-.player-swiper {
+.tennis-dashboard-container .player-swiper {
   position: relative;
   display: flex;
   align-items: flex-start;
 }
 
-.player-nav {
+.tennis-dashboard-container .player-nav {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
@@ -395,30 +401,30 @@ body {
   margin-top: 60px;
 }
 
-.player-nav:hover {
+.tennis-dashboard-container .player-nav:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.player-nav.left {
+.tennis-dashboard-container .player-nav.left {
   margin-right: 12px;
 }
 
-.player-nav.right {
+.tennis-dashboard-container .player-nav.right {
   margin-left: 12px;
 }
 
-.player-content {
+.tennis-dashboard-container .player-content {
   flex: 1;
 }
 
-.player-header {
+.tennis-dashboard-container .player-header {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 20px;
 }
 
-.player-avatar {
+.tennis-dashboard-container .player-avatar {
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -426,31 +432,31 @@ body {
   border: 3px solid #00ff88;
 }
 
-.player-avatar img {
+.tennis-dashboard-container .player-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.player-info {
+.tennis-dashboard-container .player-info {
   flex: 1;
 }
 
-.player-name-large {
+.tennis-dashboard-container .player-name-large {
   font-size: 20px;
   font-weight: bold;
   color: white;
   margin-bottom: 4px;
 }
 
-.player-level {
+.tennis-dashboard-container .player-level {
   font-size: 14px;
   color: #00ff88;
   font-weight: 500;
 }
 
 /* Stats Grid */
-.stats-grid {
+.tennis-dashboard-container .stats-grid {
   display: grid;
   /* Adjusted minmax to allow cards to be wider */
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Increased min-width */
@@ -458,21 +464,21 @@ body {
   margin-bottom: 32px;
 }
 
-.stat-card {
+.tennis-dashboard-container .stat-card {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
 }
 
-.stat-label {
+.tennis-dashboard-container .stat-label {
   display: block;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 4px;
 }
 
-.stat-value {
+.tennis-dashboard-container .stat-value {
   display: block;
   font-size: 16px;
   font-weight: bold;
@@ -480,11 +486,11 @@ body {
 }
 
 /* Insights */
-.insights {
+.tennis-dashboard-container .insights {
   margin-bottom: 24px;
 }
 
-.insight-item {
+.tennis-dashboard-container .insight-item {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 12px;
@@ -492,7 +498,7 @@ body {
   border-left: 3px solid #00ff88;
 }
 
-.insight-label {
+.tennis-dashboard-container .insight-label {
   display: block;
   font-size: 12px;
   font-weight: 600;
@@ -500,7 +506,7 @@ body {
   margin-bottom: 4px;
 }
 
-.insight-value {
+.tennis-dashboard-container .insight-value {
   display: inline-block;
   font-size: 12px;
   color: #00ff88;
@@ -508,27 +514,27 @@ body {
   margin-right: 8px;
 }
 
-.insight-advice {
+.tennis-dashboard-container .insight-advice {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.4;
 }
 
 /* Charts Grid for Player Analysis */
-.charts-grid {
+.tennis-dashboard-container .charts-grid {
   display: grid;
   /* Adjusted minmax for player analysis charts to be wider */
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Increased min-width */
   gap: 24px;
 }
 
-.chart-container {
+.tennis-dashboard-container .chart-container {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 20px;
 }
 
-.chart-container h4 {
+.tennis-dashboard-container .chart-container h4 {
   font-size: 12px;
   color: white;
   margin-bottom: 8px;
@@ -536,7 +542,7 @@ body {
 }
 
 /* Mini Court visualizations (for player trajectory, heatmap, hit points) */
-.mini-court {
+.tennis-dashboard-container .mini-court {
   position: relative;
   width: 100%;
   /* INCREASE HEIGHT */
@@ -547,14 +553,14 @@ body {
 }
 
 /* Zone Chart (Attack vs Defence) */
-.zone-chart {
+.tennis-dashboard-container .zone-chart {
   /* INCREASE HEIGHT */
   height: 180px; /* Increased from 80px */
   /* Ensure the bar chart canvas takes full height */
 }
 
 /* Radar Chart Container */
-.radar-chart-container {
+.tennis-dashboard-container .radar-chart-container {
     /* INCREASE HEIGHT */
     height: 250px; /* Adjust as needed for the radar chart */
     width: 100%; /* Ensure it takes full width of its parent */
@@ -563,51 +569,51 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 900px) { /* Added a breakpoint for wider screens */
-    .dashboard {
+    .tennis-dashboard-container .dashboard { /* Prefix with the container class */
         max-width: 95%; /* Adjust as needed */
     }
-    .charts-grid {
+    .tennis-dashboard-container .charts-grid { /* Prefix with the container class */
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
-    .stats-grid {
+    .tennis-dashboard-container .stats-grid { /* Prefix with the container class */
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
 
 @media (max-width: 768px) {
-  .dashboard {
+  .tennis-dashboard-container .dashboard { /* Prefix with the container class */
     max-width: 100%;
     padding: 24px 16px;
   }
 
-  .section {
+  .tennis-dashboard-container .section { /* Prefix with the container class */
     padding: 24px;
     margin-bottom: 24px;
   }
 
   /* Force single column for smaller screens if content still too narrow */
-  .stats-grid,
-  .charts-grid {
+  .tennis-dashboard-container .stats-grid, /* Prefix with the container class */
+  .tennis-dashboard-container .charts-grid { /* Prefix with the container class */
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .teams-container {
+  .tennis-dashboard-container .teams-container { /* Prefix with the container class */
     flex-direction: column;
     gap: 20px;
   }
 
-  .vs-text {
+  .tennis-dashboard-container .vs-text { /* Prefix with the container class */
     order: 1; /* Puts VS text between teams on mobile */
   }
 
   /* Reset heights for mobile if needed, or keep larger if preferred */
-  .court-visualization,
-  .top-speeds-container,
-  .hits-chart,
-  .mini-court,
-  .zone-chart,
-  .radar-chart-container {
+  .tennis-dashboard-container .court-visualization, /* Prefix all these with the container class */
+  .tennis-dashboard-container .top-speeds-container,
+  .tennis-dashboard-container .hits-chart,
+  .tennis-dashboard-container .mini-court,
+  .tennis-dashboard-container .zone-chart,
+  .tennis-dashboard-container .radar-chart-container {
       height: auto; /* Allow content to dictate height */
       min-height: 200px; /* Set a reasonable minimum */
   }
@@ -627,20 +633,20 @@ body {
 /* } */
 
 /* Hover effects */
-.stat-card:hover {
+.tennis-dashboard-container .stat-card:hover { /* Prefix with the container class */
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
   transition: all 0.2s ease;
 }
 
-.insight-item:hover {
+.tennis-dashboard-container .insight-item:hover { /* Prefix with the container class */
   background: rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
 }
 
 /* Focus states for accessibility */
-.swiper-arrow:focus,
-.player-nav:focus {
+.tennis-dashboard-container .swiper-arrow:focus, /* Prefix with the container class */
+.tennis-dashboard-container .player-nav:focus { /* Prefix with the container class */
   outline: 2px solid #00ff88;
   outline-offset: 2px;
 }
@@ -648,20 +654,20 @@ body {
 /* Custom scrollbar for mobile */
 /* Note: The 'player-content' is not typically scrollable unless you give it a max-height/height. */
 /* If you want internal scrolling, make sure player-content itself has `overflow-y: auto;` or `scroll;` */
-.player-content::-webkit-scrollbar {
+.tennis-dashboard-container .player-content::-webkit-scrollbar { /* Prefix with the container class */
   width: 4px;
 }
 
-.player-content::-webkit-scrollbar-track {
+.tennis-dashboard-container .player-content::-webkit-scrollbar-track { /* Prefix with the container class */
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
 }
 
-.player-content::-webkit-scrollbar-thumb {
+.tennis-dashboard-container .player-content::-webkit-scrollbar-thumb { /* Prefix with the container class */
   background: rgba(0, 255, 136, 0.5);
   border-radius: 2px;
 }
 
-.player-content::-webkit-scrollbar-thumb:hover {
+.tennis-dashboard-container .player-content::-webkit-scrollbar-thumb:hover { /* Prefix with the container class */
   background: rgba(0, 255, 136, 0.7);
 }

@@ -45,10 +45,10 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { ChevronLeft, ChevronRight, Activity, Users } from 'lucide-react';
-// REMOVE THIS LINE: import playerData from '../assets/player_analysis_fixed.json';
+import playerData from '../assets/player_analysis_fixed.json';
 import './Test.css'; // Assuming your CSS is here
 
-// Utility functions for safe data access
+// Utility functions for safe data access (unchanged)
 const safeGet = (obj, path, defaultValue = null) => {
   try {
     return path.split('.').reduce((current, key) => current?.[key], obj) ?? defaultValue;
@@ -65,21 +65,19 @@ const safeNumber = (num, defaultValue = 0) => {
 
 // ====================================================================================
 // NEW: Normalize coordinates with separate ranges for player and ball data
-// IMPORTANT: Adjust min/max values below based on your actual data ranges!
 // ====================================================================================
 const NORM_RANGES = {
-    // Example ranges for player coordinates (adjust as per your player data's actual min/max X and Y values)
     player: {
-        x: { min: -5.0, max: 5.0 },
-        y: { min: -10.0, max: 5.0 }
+        x: { min: -5.0, max: 5.0 }, // Example range for player X coordinates
+        y: { min: -10.0, max: 5.0 } // Example range for player Y coordinates
     },
-    // Example ranges for ball coordinates (adjust as per your ball data's actual min/max X and Y values)
     ball: {
-        x: { min: 200, max: 1800 }, // These values from your JSON seem like pixel-based coordinates
-        y: { min: 100, max: 900 }   // These values from your JSON seem like pixel-based coordinates
+        x: { min: 200, max: 1800 }, // Example range for ball X coordinates (from your JSON)
+        y: { min: 100, max: 900 }   // Example range for ball Y coordinates (from your JSON)
     }
 };
 
+// This function will now take an additional 'type' argument: 'player' or 'ball'
 const normalizeCoord = (value, coordType, dataType) => {
     const numValue = safeNumber(value, 0);
     const rangeConfig = NORM_RANGES[dataType]?.[coordType];
@@ -182,40 +180,40 @@ const RadarChart = ({ data, width = 200, height = 200 }) => {
   );
 };
 
-// ====================================================================================
-// MODIFIED: TennisMatchDashboard now accepts 'data' as a prop
-// ====================================================================================
-function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data' for consistency with AnalysisResult prop
+function TennisMatchDashboard() {
   const [ballChartIndex, setBallChartIndex] = useState(0);
   const [playerIndex, setPlayerIndex] = useState(0);
   const [animationFrame, setAnimationFrame] = useState(0);
 
-  // Use the 'data' prop directly
-  if (!data || Object.keys(data).length === 0) {
+  // Check if data exists
+  if (!playerData || Object.keys(playerData).length === 0) {
     return (
-      <div className="dashboard">
+      <div className="tennis-dashboard-container"> {/* Added this class */}
         <div className="no-data-message">
-          <h2>No analysis data available to display.</h2>
-          <p>Please upload a video and run the analysis to see results.</p>
+          <h2>No data available</h2>
+          <p>Could not load player data from JSON file or file is empty.</p>
         </div>
       </div>
     );
   }
 
-  // Use the 'data' prop throughout the component
+  // Get available player IDs from the data
   const getPlayerIds = () => {
     const allPlayerIds = new Set();
+
+    // Add player IDs from all relevant sections
     const sections = ['trajectories', 'heatmaps', 'ball_hit_locations', 'role',
                       'role_advice', 'reaction_time_efficiency', 'reaction_advice',
                       'shot_effectiveness', 'shot_advice', 'player_contribution',
                       'player_contribution_advice', 'stamina_drop_time', 'stamina_advice'];
 
     sections.forEach(section => {
-        const sectionData = safeGet(data, section, {}); // Use 'data' prop
-        if (typeof sectionData === 'object' && sectionData !== null) {
-            Object.keys(sectionData).forEach(key => {
+        const data = safeGet(playerData, section, {});
+        if (typeof data === 'object' && data !== null) {
+            Object.keys(data).forEach(key => {
+                // For 'zone_presence_percentages', need to go one level deeper
                 if (section === 'zone_presence_percentages') {
-                    const subData = sectionData[key];
+                    const subData = data[key];
                     if (typeof subData === 'object' && subData !== null) {
                         Object.keys(subData).forEach(playerKey => {
                             if (playerKey.startsWith('player')) {
@@ -230,13 +228,13 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
         }
     });
 
-    safeArray(safeGet(data, 'animation', [])).forEach(frame => { // Use 'data' prop
+    // Add player IDs from animation frames
+    safeArray(safeGet(playerData, 'animation', [])).forEach(frame => {
         if (typeof frame === 'object' && frame !== null) {
             Object.keys(frame).forEach(key => {
                 if (key.startsWith('player')) {
                     allPlayerIds.add(key);
                 }
-                // Check for 'ball' key in animation frame for existence, no need to add to playerIds
             });
         }
     });
@@ -244,58 +242,62 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
     return Array.from(allPlayerIds).sort();
   };
 
+
+  // Transform player data for display
   const transformPlayerData = (playerId) => {
     const playerName = playerId.replace(/^player/i, 'Player ').replace(/player(\d+)/i, 'Player $1') || playerId;
+
     const getZonePercentage = (zone) => {
-      const zoneData = safeGet(data, 'zone_presence_percentages', {}); // Use 'data' prop
-      for (const [zoneKey, zonePlayersData] of Object.entries(zoneData)) {
-        if (zoneKey.toLowerCase().includes(zone.toLowerCase()) && zonePlayersData && zonePlayersData[playerId] !== undefined) {
-          return safeNumber(zonePlayersData[playerId]);
+      const zoneData = safeGet(playerData, 'zone_presence_percentages', {});
+      // Try to find the zone key that directly contains the zone name
+      for (const [zoneKey, data] of Object.entries(zoneData)) {
+        if (zoneKey.toLowerCase().includes(zone.toLowerCase()) && data && data[playerId] !== undefined) {
+          return safeNumber(data[playerId]);
         }
       }
-      return 0;
+      return 0; // Default if no data found
     };
 
     return {
       id: playerId,
       name: playerName,
-      level: safeGet(data, `role.${playerId}`, "Unknown"), // Use 'data' prop
+      level: safeGet(playerData, `role.${playerId}`, "Unknown"),
       image: `https://ui-avatars.com/api/?name=${encodeURIComponent(playerName)}&background=00ff88&color=000&size=100`,
       trajectories: {
-        x: safeArray(safeGet(data, `trajectories.${playerId}.x`)), // Use 'data' prop
-        y: safeArray(safeGet(data, `trajectories.${playerId}.y`))  // Use 'data' prop
+        x: safeArray(safeGet(playerData, `trajectories.${playerId}.x`)),
+        y: safeArray(safeGet(playerData, `trajectories.${playerId}.y`))
       },
       heatmap: {
-        x: safeArray(safeGet(data, `heatmaps.${playerId}.x`)), // Use 'data' prop
-        y: safeArray(safeGet(data, `heatmaps.${playerId}.y`))  // Use 'data' prop
+        x: safeArray(safeGet(playerData, `heatmaps.${playerId}.x`)),
+        y: safeArray(safeGet(playerData, `heatmaps.${playerId}.y`))
       },
       ballHits: {
-        x: safeArray(safeGet(data, `ball_hit_locations.${playerId}.x`)), // Use 'data' prop
-        y: safeArray(safeGet(data, `ball_hit_locations.${playerId}.y`))  // Use 'data' prop
+        x: safeArray(safeGet(playerData, `ball_hit_locations.${playerId}.x`)),
+        y: safeArray(safeGet(playerData, `ball_hit_locations.${playerId}.y`))
       },
       positioningHeatmap: [
         { zone: 'attack', intensity: getZonePercentage('attack') },
         { zone: 'defense', intensity: getZonePercentage('defense') }
       ],
       stats: {
-        distance: safeNumber(safeGet(data, `distance_total.${playerId}`)), // Use 'data' prop
-        avgSpeed: safeNumber(safeGet(data, `average_speed.${playerId}`)),    // Use 'data' prop
-        avgAcceleration: safeNumber(safeGet(data, `average_acceleration.${playerId}`)), // Use 'data' prop
-        maxSpeed: safeNumber(safeGet(data, `max_speed.${playerId}`)),      // Use 'data' prop
-        reactionEfficiency: safeNumber(safeGet(data, `reaction_time_efficiency.${playerId}`)), // Use 'data' prop
-        shotEffectiveness: safeNumber(safeGet(data, `shot_effectiveness.${playerId}`)),    // Use 'data' prop
-        contribution: safeNumber(safeGet(data, `player_contribution.${playerId}`)),      // Use 'data' prop
-        staminaDrop: safeGet(data, `stamina_drop_time.${playerId}`),           // Use 'data' prop
+        distance: safeNumber(safeGet(playerData, `distance_total.${playerId}`)),
+        avgSpeed: safeNumber(safeGet(playerData, `average_speed.${playerId}`)),
+        avgAcceleration: safeNumber(safeGet(playerData, `average_acceleration.${playerId}`)),
+        maxSpeed: safeNumber(safeGet(playerData, `max_speed.${playerId}`)),
+        reactionEfficiency: safeNumber(safeGet(playerData, `reaction_time_efficiency.${playerId}`)),
+        shotEffectiveness: safeNumber(safeGet(playerData, `shot_effectiveness.${playerId}`)),
+        contribution: safeNumber(safeGet(playerData, `player_contribution.${playerId}`)),
+        staminaDrop: safeGet(playerData, `stamina_drop_time.${playerId}`),
         attackZone: getZonePercentage('attack'),
         defenseZone: getZonePercentage('defense'),
-        hitCount: safeNumber(safeGet(data, `hit_count_per_player.${playerId}`)) // Use 'data' prop
+        hitCount: safeNumber(safeGet(playerData, `hit_count_per_player.${playerId}`))
       },
       advice: {
-        role: safeGet(data, `role_advice.${playerId}`, "No advice available"), // Use 'data' prop
-        reaction: safeGet(data, `reaction_advice.${playerId}`, "No advice available"), // Use 'data' prop
-        shot: safeGet(data, `shot_advice.${playerId}`, "No advice available"),       // Use 'data' prop
-        participation: safeGet(data, `player_contribution_advice.${playerId}`, "No advice available"), // Use 'data' prop
-        stamina: safeGet(data, `stamina_advice.${playerId}`, "No advice available")  // Use 'data' prop
+        role: safeGet(playerData, `role_advice.${playerId}`, "No advice available"),
+        reaction: safeGet(playerData, `reaction_advice.${playerId}`, "No advice available"),
+        shot: safeGet(playerData, `shot_advice.${playerId}`, "No advice available"),
+        participation: safeGet(playerData, `player_contribution_advice.${playerId}`, "No advice available"),
+        stamina: safeGet(playerData, `stamina_advice.${playerId}`, "No advice available")
       }
     };
   };
@@ -304,24 +306,26 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
   const players = playerIds.map(transformPlayerData);
   const currentPlayer = players[playerIndex] || {};
 
+  // Animation effect
   useEffect(() => {
-    const animationData = safeArray(safeGet(data, 'animation')); // Use 'data' prop
+    const animationData = safeArray(safeGet(playerData, 'animation'));
     if (animationData.length === 0) {
-      setAnimationFrame(0);
+      setAnimationFrame(0); // Reset if no animation data
       return;
     }
 
     const interval = setInterval(() => {
       setAnimationFrame(prev => (prev + 1) % animationData.length);
-    }, 50); // Adjust interval as needed, currently 50ms for faster animation
+    }, 50); // Adjust interval as needed
     return () => clearInterval(interval);
-  }, [data]); // Depend on 'data' prop, not local playerData
+  }, [playerData]); // Re-run effect if playerData changes
 
+  // Ball charts configuration
   const ballCharts = [
     {
       title: "Ball Hit Locations (All Players)",
       component: () => {
-        const ballHitData = safeGet(data, 'ball_hit_locations', {}); // Use 'data' prop
+        const ballHitData = safeGet(playerData, 'ball_hit_locations', {});
         const hasData = Object.keys(ballHitData).some(playerId => {
           const hits = ballHitData[playerId];
           return hits && safeArray(hits.x).length > 0;
@@ -336,19 +340,21 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
             <div className="court-grid">
               {Object.entries(ballHitData).map(([playerId, hits]) => {
                 if (!hits) return null;
+
                 const xCoords = safeArray(hits.x);
                 const yCoords = safeArray(hits.y);
 
                 return xCoords.map((x, i) => {
                   const y = yCoords[i];
                   if (x == null || y == null || isNaN(safeNumber(x)) || isNaN(safeNumber(y))) return null;
+
                   return (
                     <div
-                      key={`<span class="math-inline">\{playerId\}\-</span>{i}`}
+                      key={`${playerId}-${i}`}
                       className="ball-hit-dot"
                       style={{
-                        left: `${normalizeCoord(x, 'x', 'ball')}%`,
-                        top: `${normalizeCoord(y, 'y', 'ball')}%`,
+                        left: `${normalizeCoord(x, 'x', 'ball')}%`, // Use 'ball' dataType for ball coordinates
+                        top: `${normalizeCoord(y, 'y', 'ball')}%`,  // Use 'ball' dataType for ball coordinates
                         backgroundColor: (playerId.includes('1') || playerId.includes('2')) ? '#00ff88' : '#ffaa00'
                       }}
                     />
@@ -363,7 +369,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
     {
       title: "Ball Trajectory",
       component: () => {
-        const trajectory = safeGet(data, 'ball_trajectory', {}); // Use 'data' prop
+        const trajectory = safeGet(playerData, 'ball_trajectory', {});
         const xCoords = safeArray(trajectory.x);
         const yCoords = safeArray(trajectory.y);
 
@@ -376,6 +382,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
             if (x == null || y == null || isNaN(safeNumber(x)) || isNaN(safeNumber(y))) {
                 return null;
             }
+            // Use 'ball' dataType for ball coordinates
             return { x: normalizeCoord(x, 'x', 'ball'), y: normalizeCoord(y, 'y', 'ball') };
         }).filter(Boolean);
 
@@ -406,7 +413,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
     {
       title: "Top Speeds",
       component: () => {
-        const topHits = safeArray(safeGet(data, 'top_3_strongest_hits')); // Use 'data' prop
+        const topHits = safeArray(safeGet(playerData, 'top_3_strongest_hits'));
 
         if (topHits.length === 0) {
           return <div className="no-data-message">No top hit speed data available.</div>;
@@ -430,7 +437,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                 <div key={index} className="speed-bar">
                   <div className="speed-info">
                     <span className="player-name">{playerName}</span>
-                    <span className="speed-value">{speed.toFixed(1)} unit/s</span>
+                    <span className="speed-value">{speed.toFixed(1)} unit/s</span> {/* Adjust unit */}
                   </div>
                   <div className="speed-rank">{index + 1}</div>
                   <div
@@ -447,7 +454,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
     {
       title: "Number of Ball Hits",
       component: () => {
-        const hitCounts = safeGet(data, 'hit_count_per_player', {}); // Use 'data' prop
+        const hitCounts = safeGet(playerData, 'hit_count_per_player', {});
 
         if (Object.keys(hitCounts).length === 0) {
           return <div className="no-data-message">No hit count data available.</div>;
@@ -473,9 +480,10 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
     }
   ];
 
+  // Get radar chart data for current player (unchanged)
   const getRadarData = () => {
-    const metrics = safeArray(safeGet(data, 'radar_performance.metrics')); // Use 'data' prop
-    const playerPerformance = safeGet(data, `radar_performance.players.${currentPlayer.id}`, {}); // Use 'data' prop
+    const metrics = safeArray(safeGet(playerData, 'radar_performance.metrics'));
+    const playerPerformance = safeGet(playerData, `radar_performance.players.${currentPlayer.id}`, {});
 
     return metrics.map(metric => ({
       subject: metric || 'Unknown',
@@ -485,7 +493,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
   };
 
   return (
-    <div className="dashboard">
+    <div className="tennis-dashboard-container"> {/* Added this class */}
       {/* Match Results */}
       <div className="section match-results">
         <h2 className="section-title">Match Results</h2>
@@ -552,7 +560,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
         <div className="court-visualization">
           <div className="court-grid">
             {(() => {
-              const animationData = safeArray(safeGet(data, 'animation')); // Use 'data' prop
+              const animationData = safeArray(safeGet(playerData, 'animation'));
               const currentFrame = animationData[animationFrame];
 
               if (!currentFrame) {
@@ -570,8 +578,8 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                       key={key}
                       className="animated-ball"
                       style={{
-                        left: `${normalizeCoord(position.x, 'x', 'ball')}%`,
-                        top: `${normalizeCoord(position.y, 'y', 'ball')}%`
+                        left: `${normalizeCoord(position.x, 'x', 'ball')}%`, // Use 'ball' dataType
+                        top: `${normalizeCoord(position.y, 'y', 'ball')}%`  // Use 'ball' dataType
                       }}
                     />
                   );
@@ -582,8 +590,8 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                       key={key}
                       className="animated-player"
                       style={{
-                        left: `${normalizeCoord(position.x, 'x', 'player')}%`,
-                        top: `${normalizeCoord(position.y, 'y', 'player')}%`
+                        left: `${normalizeCoord(position.x, 'x', 'player')}%`, // Use 'player' dataType
+                        top: `${normalizeCoord(position.y, 'y', 'player')}%`  // Use 'player' dataType
                       }}
                     >
                       <div className="player-dot" />
@@ -714,8 +722,8 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                               key={i}
                               className="trajectory-point"
                               style={{
-                                left: `${normalizeCoord(x, 'x', 'player')}%`,
-                                top: `${normalizeCoord(y, 'y', 'player')}%`,
+                                left: `${normalizeCoord(x, 'x', 'player')}%`, // Use 'player' dataType
+                                top: `${normalizeCoord(y, 'y', 'player')}%`,  // Use 'player' dataType
                               }}
                             />
                           );
@@ -737,8 +745,8 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                               key={i}
                               className="heatmap-point"
                               style={{
-                                left: `${normalizeCoord(x, 'x', 'player')}%`,
-                                top: `${normalizeCoord(y, 'y', 'player')}%`,
+                                left: `${normalizeCoord(x, 'x', 'player')}%`, // Use 'player' dataType
+                                top: `${normalizeCoord(y, 'y', 'player')}%`,  // Use 'player' dataType
                               }}
                             />
                           );
@@ -760,8 +768,8 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
                               key={i}
                               className="hit-point"
                               style={{
-                                left: `${normalizeCoord(x, 'x', 'ball')}%`,
-                                top: `${normalizeCoord(y, 'y', 'ball')}%`,
+                                left: `${normalizeCoord(x, 'x', 'ball')}%`, // Use 'ball' dataType
+                                top: `${normalizeCoord(y, 'y', 'ball')}%`,  // Use 'ball' dataType
                               }}
                             />
                           );
@@ -838,6 +846,7 @@ function TennisMatchDashboard({ data }) { // Renamed from 'playerData' to 'data'
         </div>
       </div>
     </div>
+
   );
 }
 
