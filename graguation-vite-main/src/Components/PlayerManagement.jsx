@@ -203,21 +203,182 @@
 
 // export default CourtLayout;
 
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
+// import how from '../assets/How to assign.png';
+// import './PlayerManagement.css';
+
+// function CourtLayout({ players }) {
+//   const [courtPositions, setCourtPositions] = useState({
+//     1: null,
+//     2: null,
+//     3: null,
+//     4: null
+//   });
+  
+//   const [showPlayerSelector, setShowPlayerSelector] = useState(null);
+//   const [showTooltip, setShowTooltip] = useState(false);
+  
+//   // Handle assigning a player to a position
+//   const handleAssignPlayer = (position, player) => {
+//     setCourtPositions(prev => ({
+//       ...prev,
+//       [position]: player
+//     }));
+//     setShowPlayerSelector(null);
+//   };
+  
+//   // Handle removing a player from a position
+//   const handleRemovePlayer = (position) => {
+//     setCourtPositions(prev => ({
+//       ...prev,
+//       [position]: null
+//     }));
+//   };
+  
+//   // Component for player selector popup
+//   const PlayerSelector = ({ position, onSelect, onClose }) => {
+//     // Get all currently assigned player IDs
+//     const assignedPlayerIds = Object.values(courtPositions)
+//       .filter(player => player !== null)
+//       .map(player => player.id);
+    
+//     // Filter out players that are already assigned
+//     const availablePlayers = players.filter(player => 
+//       !assignedPlayerIds.includes(player.id)
+//     );
+    
+//     return (
+//       <div className="player-selector">
+//         <div className="player-selector-content">
+//           <h3>Select Player for Position {position}</h3>
+//           {availablePlayers.length === 0 ? (
+//             <p>No available players. Add players first or remove players from other positions.</p>
+//           ) : (
+//             <ul>
+//               {availablePlayers.map(player => (
+//                 <li key={player.id} onClick={() => onSelect(position, player)}>
+//                   {player.name}
+//                 </li>
+//               ))}
+//             </ul>
+//           )}
+//           <button className="close-selector" onClick={onClose}>Cancel</button>
+//         </div>
+//       </div>
+//     );
+//   };
+  
+//   // Render a position on the court
+//   const renderPosition = (position) => {
+//     const player = courtPositions[position];
+//     const isTopRow = position === 1 || position === 2;
+    
+//     return (
+//       <div className={`court-position position-${position} ${isTopRow ? 'top-position' : 'bottom-position'}`}>
+//         <div className="position-circle">
+//           <span className="position-number">{position}</span>
+//         </div>
+//         {player && (
+//           <div className="assigned-player">
+//             <img 
+//               src={player.profilePicture || "https://via.placeholder.com/40"} 
+//               alt={player.name} 
+//               className="player-avatar" 
+//             />
+//             <span className="player-name">{player.name}</span>
+//             <button 
+//               className="remove-player-btn" 
+//               onClick={() => handleRemovePlayer(position)}
+//             >
+//               ×
+//             </button>
+//           </div>
+//         )}
+//         {!player && (
+//           <button 
+//             className="add-player-btn" 
+//             onClick={() => setShowPlayerSelector(position)}
+//           >
+//             +
+//           </button>
+//         )}
+//       </div>
+//     );
+//   };
+  
+//   return (
+//     <div className="court-layout">
+//       <div className="help-section">
+//         <div 
+//           className="info-icon"
+//           onMouseEnter={() => setShowTooltip(true)}
+//           onMouseLeave={() => setShowTooltip(false)}
+//         >
+//           ℹ️
+//         </div>
+//         {showTooltip && (
+//           <div className="tooltip">
+//             <img 
+//               src={how} 
+//               alt="Court Layout Guide" 
+//               className="tooltip-image"
+//             />
+//           </div>
+//         )}
+//       </div>
+      
+//       <div className="court">
+//         <div className="court-net"></div>
+//         <div className="top-row">
+//           {renderPosition(1)}
+//           {renderPosition(2)}
+//         </div>
+//         <div className="bottom-row">
+//           {renderPosition(3)}
+//           {renderPosition(4)}
+//         </div>
+//       </div>
+      
+//       {showPlayerSelector && (
+//         <PlayerSelector 
+//           position={showPlayerSelector}
+//           onSelect={handleAssignPlayer}
+//           onClose={() => setShowPlayerSelector(null)}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+// export default CourtLayout;
+
+import React, { useState, useEffect } from 'react'; // Added useEffect for potential future use or if initial players change
 import how from '../assets/How to assign.png';
 import './PlayerManagement.css';
 
-function CourtLayout({ players }) {
+// Added onPositionsChange prop
+function CourtLayout({ players, onPositionsChange }) {
   const [courtPositions, setCourtPositions] = useState({
     1: null,
     2: null,
     3: null,
     4: null
   });
-  
+
   const [showPlayerSelector, setShowPlayerSelector] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  
+
+  // Effect to call onPositionsChange whenever courtPositions changes
+  useEffect(() => {
+    // Extract only player IDs from the assigned positions
+    const assignedPlayerIds = Object.values(courtPositions)
+                                   .filter(player => player !== null)
+                                   .map(player => player.id);
+    if (onPositionsChange) {
+      onPositionsChange(assignedPlayerIds);
+    }
+  }, [courtPositions, onPositionsChange]); // Depend on courtPositions and onPositionsChange
+
   // Handle assigning a player to a position
   const handleAssignPlayer = (position, player) => {
     setCourtPositions(prev => ({
@@ -226,7 +387,7 @@ function CourtLayout({ players }) {
     }));
     setShowPlayerSelector(null);
   };
-  
+
   // Handle removing a player from a position
   const handleRemovePlayer = (position) => {
     setCourtPositions(prev => ({
@@ -234,19 +395,19 @@ function CourtLayout({ players }) {
       [position]: null
     }));
   };
-  
+
   // Component for player selector popup
   const PlayerSelector = ({ position, onSelect, onClose }) => {
     // Get all currently assigned player IDs
     const assignedPlayerIds = Object.values(courtPositions)
       .filter(player => player !== null)
       .map(player => player.id);
-    
+
     // Filter out players that are already assigned
-    const availablePlayers = players.filter(player => 
+    const availablePlayers = players.filter(player =>
       !assignedPlayerIds.includes(player.id)
     );
-    
+
     return (
       <div className="player-selector">
         <div className="player-selector-content">
@@ -267,12 +428,12 @@ function CourtLayout({ players }) {
       </div>
     );
   };
-  
+
   // Render a position on the court
   const renderPosition = (position) => {
     const player = courtPositions[position];
     const isTopRow = position === 1 || position === 2;
-    
+
     return (
       <div className={`court-position position-${position} ${isTopRow ? 'top-position' : 'bottom-position'}`}>
         <div className="position-circle">
@@ -280,14 +441,14 @@ function CourtLayout({ players }) {
         </div>
         {player && (
           <div className="assigned-player">
-            <img 
-              src={player.profilePicture || "https://via.placeholder.com/40"} 
-              alt={player.name} 
-              className="player-avatar" 
+            <img
+              src={player.profilePicture || "https://via.placeholder.com/40"}
+              alt={player.name}
+              className="player-avatar"
             />
             <span className="player-name">{player.name}</span>
-            <button 
-              className="remove-player-btn" 
+            <button
+              className="remove-player-btn"
               onClick={() => handleRemovePlayer(position)}
             >
               ×
@@ -295,8 +456,8 @@ function CourtLayout({ players }) {
           </div>
         )}
         {!player && (
-          <button 
-            className="add-player-btn" 
+          <button
+            className="add-player-btn"
             onClick={() => setShowPlayerSelector(position)}
           >
             +
@@ -305,11 +466,11 @@ function CourtLayout({ players }) {
       </div>
     );
   };
-  
+
   return (
     <div className="court-layout">
       <div className="help-section">
-        <div 
+        <div
           className="info-icon"
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
@@ -318,15 +479,15 @@ function CourtLayout({ players }) {
         </div>
         {showTooltip && (
           <div className="tooltip">
-            <img 
-              src={how} 
-              alt="Court Layout Guide" 
+            <img
+              src={how}
+              alt="Court Layout Guide"
               className="tooltip-image"
             />
           </div>
         )}
       </div>
-      
+
       <div className="court">
         <div className="court-net"></div>
         <div className="top-row">
@@ -338,9 +499,9 @@ function CourtLayout({ players }) {
           {renderPosition(4)}
         </div>
       </div>
-      
+
       {showPlayerSelector && (
-        <PlayerSelector 
+        <PlayerSelector
           position={showPlayerSelector}
           onSelect={handleAssignPlayer}
           onClose={() => setShowPlayerSelector(null)}

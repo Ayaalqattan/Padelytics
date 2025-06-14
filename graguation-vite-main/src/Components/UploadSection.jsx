@@ -319,7 +319,7 @@ import VideoUpload from './VideoUpload';
 import PlayerManagement from './PlayerManagement';
 import CourtSelection from './CourtSelection';
 import SectionOne from '../components/SectionOne';
-import AnalysisResult from './AnalysisResult';
+import AnalysisResult from './AnalysisResult'; // Assuming this now refers to TennisMatchDashboard
 import axios from 'axios';
 
 function UploadSection() {
@@ -331,6 +331,7 @@ function UploadSection() {
   const [analysisData, setAnalysisData] = useState(null);
 
   useEffect(() => {
+    // Fetches friends/players from the backend when the component mounts
     axios.get('http://localhost:8000/home/api/get_friends/')
       .then(res => {
         setPlayers(res.data.friends);
@@ -338,11 +339,12 @@ function UploadSection() {
       .catch(err => {
         console.error('Error fetching friends:', err);
       });
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevents default form submission behavior (page reload)
 
+    // Input validation
     if (!videoFile) {
       alert('Please upload a video');
       return;
@@ -358,36 +360,45 @@ function UploadSection() {
       return;
     }
 
+    // Set analysis state to true to show loading indicators
     setIsAnalyzing(true);
-    setAnalysisMessage('');
-    setAnalysisData(null);
+    setAnalysisMessage(''); // Clear previous messages
+    setAnalysisData(null); // Clear previous analysis data
 
+    // Create FormData object to send video file and other data
     const formData = new FormData();
     formData.append('video', videoFile);
-    formData.append('court', selectedCourt); // إضافة court إلى الطلب
-    formData.append('players', players.map(player => player.id).join(',')); // إرسال معرفات اللاعبين مفصولة بفواصل
+    formData.append('court', selectedCourt); // Add selected court to the request
+    // Send player IDs as a comma-separated string
+    formData.append('players', players.map(player => player.id).join(','));
 
     try {
+      // Step 1: Upload the video
       const uploadResponse = await axios.post('http://localhost:8000/home/api/upload-video/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' } // Important for file uploads
       });
 
+      // Check if the upload was successful based on the backend's response message
       if (uploadResponse.data.message !== 'Success') {
         setIsAnalyzing(false);
         alert(`❌ Upload failed: ${uploadResponse.data.error || 'Unknown error'}`);
         return;
       }
 
-      const cloudinaryUrl = uploadResponse.data.url;
+      const cloudinaryUrl = uploadResponse.data.url; // Assuming backend returns Cloudinary URL
+      console.log('Video uploaded to Cloudinary:', cloudinaryUrl); // For debugging
 
-      // الآن، يمكننا الاعتماد على الـ backend لإرسال البيانات إلى FastAPI إذا لزم الأمر
-      setIsAnalyzing(false);
+      // Step 2: Handle analysis results returned by the backend
+      // Assuming the backend handles sending data to FastAPI and returning the analysis results
+      setIsAnalyzing(false); // Analysis is complete
       setAnalysisMessage('✅ Analysis Successful!');
-      setAnalysisData(uploadResponse.data.fastapi_response || {}); // افتراض أن الـ backend يُرجع نتائج FastAPI
+      // Set the analysis data to state, expecting it under fastapi_response key
+      setAnalysisData(uploadResponse.data.fastapi_response || {}); 
       alert('✅ Analysis Successful!');
 
     } catch (error) {
-      setIsAnalyzing(false);
+      // Handle any errors during upload or analysis
+      setIsAnalyzing(false); // Stop analyzing state
       const errorMessage = error.response?.data?.error || error.message;
       setAnalysisMessage(`❌ Analysis failed: ${errorMessage}`);
       alert(`❌ Analysis failed: ${errorMessage}`);
@@ -397,7 +408,7 @@ function UploadSection() {
 
   return (
     <div className="upload-section">
-      <SectionOne />
+      <SectionOne /> {/* Renders the SectionOne component */}
       <div className="app-container">
         <div className="form-container">
           <form id="analysis-form" onSubmit={handleSubmit}>
@@ -428,29 +439,30 @@ function UploadSection() {
             <button 
               type="submit" 
               className="submit-button"
-              disabled={isAnalyzing}
+              disabled={isAnalyzing} // Disable button while analyzing
             >
               {isAnalyzing ? 'Analyzing...' : 'Analyze Video'}
             </button>
 
-            {isAnalyzing && (
+            {isAnalyzing && ( // Show loading spinner and message when analyzing
               <div className="loading">
                 <div className="spinner"></div>
                 <p>Analyzing video... This may take a few minutes.</p>
               </div>
             )}
 
-            {analysisMessage && (
+            {analysisMessage && ( // Display analysis success or failure message
               <p className={`mt-4 text-center ${analysisMessage.startsWith('✅') ? 'text-green-500' : 'text-red-500'}`}>
                 {analysisMessage}
               </p>
             )}
           </form>
 
-          {analysisData && (
+          {analysisData && ( // Conditionally render analysis results if data is available
             <div className="form-section">
               <h2>Analysis Result</h2>
-              <AnalysisResult data={analysisData} />
+              {/* Passes the fetched analysisData to the AnalysisResult component */}
+              <AnalysisResult data={analysisData} /> 
             </div>
           )}
         </div>
