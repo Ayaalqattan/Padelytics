@@ -330,8 +330,10 @@ function UploadSection() {
   const [analysisMessage, setAnalysisMessage] = useState('');
   const [analysisData, setAnalysisData] = useState(null);
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/home/api/get_friends/')
+  useEffect(() =>  {
+  axios.get('http://localhost:8000/home/api/get_friends/', {
+    withCredentials: true  // ✅ أضف هذا السطر
+  })
       .then(res => {
         setPlayers(res.data.friends);
       })

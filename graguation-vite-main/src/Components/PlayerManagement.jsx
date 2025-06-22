@@ -339,13 +339,15 @@ function CourtLayout({ players }) {
         </div>
       </div>
       
-      {showPlayerSelector && (
-        <PlayerSelector 
-          position={showPlayerSelector}
-          onSelect={handleAssignPlayer}
-          onClose={() => setShowPlayerSelector(null)}
-        />
-      )}
+      {showPlayerSelector !== null && (
+    <PlayerSelector 
+     key={showPlayerSelector}  // 💡 مهم لتحديث البوب أب عند كل ضغط
+     position={showPlayerSelector}
+     onSelect={handleAssignPlayer}
+     onClose={() => setShowPlayerSelector(null)}
+  />
+)}
+
     </div>
   );
 }

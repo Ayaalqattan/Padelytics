@@ -135,11 +135,14 @@ class VideoUploadView(APIView):
 
             # استقبال الـ court والـ players من الطلب
             court_id = request.data.get('court', None)
-            players_str = request.data.get('players', '')
-            if isinstance(players_str, str) and players_str:
-                players = [player.strip() for player in players_str.split(',') if player.strip()]
-            else:
-                players = []
+            import json
+            players_raw = request.data.get('players', '[]')
+            try:
+              players = json.loads(players_raw)
+            except json.JSONDecodeError:
+              logger.error("خطأ في تنسيق بيانات اللاعبين")
+              players = []
+
 
             # التعامل مع الـ court
             if not court_id:
@@ -189,7 +192,7 @@ class VideoUploadView(APIView):
                 # تهيئة بيانات للحفظ في Firestore
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
-                match_ref = user_ref.collection('uploaded_matches').document(fastapi_data.get("matchID", secure_url.split("/")[-1]))
+                match_ref = user_ref.collection('uploadedMatches').document(fastapi_data.get("matchID", secure_url.split("/")[-1]))
 
                 try:
                     formatted_time = fastapi_data.get("formattedTime", datetime.now().strftime("%d-%m-%Y %H:%M"))
@@ -220,7 +223,7 @@ class VideoUploadView(APIView):
                 logger.error("انتهت مهلة طلب FastAPI بعد 60 دقيقة")
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
-                match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
+                match_ref = user_ref.collection('uploadedMatches').document(secure_url.split("/")[-1])
                 
                 formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
                 match_data = {
@@ -246,7 +249,7 @@ class VideoUploadView(APIView):
                 logger.error(f"فشل طلب FastAPI: {str(e)}")
                 user_id = request.user.id
                 user_ref = db.collection('users').document(str(user_id))
-                match_ref = user_ref.collection('uploaded_matches').document(secure_url.split("/")[-1])
+                match_ref = user_ref.collection('uploadedMatches').document(secure_url.split("/")[-1])
                 
                 formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M")
                 match_data = {
